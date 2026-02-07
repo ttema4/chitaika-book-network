@@ -14,4 +14,4 @@
 
 ### Макет проекта
 
-![Макет сайта](public/images/mockup.png)
+![Макет сайта](images/mockup.png)
