@@ -1,0 +1,43 @@
+  </main>
+
+  <footer class="footer" id="contacts">
+    <h2 class="footer__title">Контакты</h2>
+    <address class="footer__address">
+      Электронная почта: <a class="link" href="mailto:hello@chitaika.example">hello@chitaika.example</a><br>
+      Телефон: <a class="link" href="tel:+70000000000">+7 000 000-00-00</a>
+    </address>
+    <p class="footer__copy">
+      © <time datetime="2026-01-01">2026</time> «Читайка». Все права защищены.
+    </p>
+  </footer>
+  
+  <script>
+    // Simple script to demonstrate active link based on current URL
+    document.addEventListener('DOMContentLoaded', () => {
+        const links = document.querySelectorAll('.nav__link');
+        const currentPath = window.location.pathname;
+        links.forEach(link => {
+            if (link.getAttribute('href') === currentPath) {
+                link.classList.add('nav__link--active');
+            } else {
+                link.classList.remove('nav__link--active');
+            }
+        });
+
+        const eventSource = new EventSource('/books/events');
+        eventSource.onmessage = ({ data }) => {
+            console.log('New message', data);
+            const message = JSON.parse(data);
+            Toastify({
+                text: `📚 Новая книга: ${message.title} (${message.author})`,
+                duration: 5000,
+                gravity: "top", 
+                position: "right", 
+                style: {
+                    background: "#0d6efd",
+                }
+            }).showToast();
+        };
+    });
+  </script>
+</body>

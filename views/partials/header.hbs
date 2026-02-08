@@ -1,0 +1,52 @@
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{{metaTitle}}</title>
+  <link rel="stylesheet" href="/css/styles.css">
+  <script src="/js/page-load-time.js" defer></script>
+  <script src="/js/nav-active.js" defer></script>
+  
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/toastify-js/src/toastify.min.css">
+  <script defer src="https://cdn.jsdelivr.net/npm/toastify-js"></script>
+  <script src="/js/favorites.js" defer></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+  
+</head>
+<body class="page">
+  <header class="header">
+    <div class="header__inner">
+      <h1 class="header__title">Читайка — {{title}}</h1>
+
+      <div class="header__bar">
+        <nav class="nav" aria-label="Основная навигация">
+          <ul class="nav__list">
+            <li class="nav__item"><a class="nav__link" href="/">Главная</a></li>
+            <li class="nav__item"><a class="nav__link" href="/books">Все книги</a></li>
+            <li class="nav__item"><a class="nav__link" href="/users/readers">Читатели</a></li>
+            <li class="nav__item"><a class="nav__link" href="/friends-reads">Что читают друзья</a></li>
+            <li class="nav__item"><a class="nav__link" href="/about">О нас</a></li>
+          </ul>
+        </nav>
+
+        <p class="header__auth">
+          {{#if currentUser}}
+             <div style="display: flex; align-items: center; gap: 1rem;">
+                <a href="/users/{{currentUser.id}}" class="header__user" style="display: flex; align-items: center; gap: 0.5rem; text-decoration: none; color: inherit;">
+                    <img src="{{#if currentUser.avatar_url}}{{currentUser.avatar_url}}{{else}}https://storage.yandexcloud.net/book-network/images/avatar.png{{/if}}" 
+                         style="width: 32px; height: 32px; border-radius: 50%; object-fit: cover; border: 1px solid var(--border);"
+                         alt="Avatar">
+                    <span style="font-weight: 500;">{{currentUser.username}}</span>
+                </a>
+             </div>
+          {{else}}
+          <a class="btn-ghost" href="/login">Войти</a>
+          <span class="divider" aria-hidden="true">|</span>
+          <a class="btn-ghost" href="/register">Регистрация</a>
+          {{/if}}
+        </p>
+      </div>
+    </div>
+  </header>
+
+  <main class="main">

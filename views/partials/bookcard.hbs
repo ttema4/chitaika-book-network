@@ -1,0 +1,41 @@
+<article class="card" {{#if id}}id="book-card-{{id}}"{{/if}}>
+  {{#if friendName}}
+  
+  <a class="card__friend" href="/users/{{friendId}}">Читает: {{friendName}}</a>
+  {{/if}}
+  
+  <h3 class="card__title">{{title}}</h3>
+  <p class="card__meta">Автор: {{author}}</p>
+  
+  <figure class="figure">
+    
+    <div class="card__image-wrapper">
+        <img class="card__image figure__img" 
+             src="{{#if coverUrl}}{{coverUrl}}{{else}}{{#if cover_url}}{{cover_url}}{{else}}https://storage.yandexcloud.net/book-network/images/cover.png{{/if}}{{/if}}" 
+             alt="Обложка книги «{{title}}»"
+             loading="lazy"
+             onerror="if(!this.dataset.retried){this.dataset.retried=true; this.src=this.src+'?t='+Date.now();}else{this.src='https://storage.yandexcloud.net/book-network/images/cover.png'; this.onerror=null;}">
+    </div>
+  </figure>
+  
+  {{#if genre}}
+    <p class="figure__caption">{{genre}}</p>
+  {{/if}}
+  
+  {{#if description}}
+  <p class="card__text">{{description}}</p>
+  {{/if}}
+
+  
+  <button class="fav-btn {{#if isFavorite}}is-active{{/if}}" 
+          type="button" 
+          aria-label="{{#if isFavorite}}Удалить из избранного{{else}}Добавить в избранное{{/if}}" 
+          aria-pressed="{{#if isFavorite}}true{{else}}false{{/if}}"
+          data-book-id="{{id}}"
+          data-book="{{title}}"
+          {{#unless @root.isAuthenticated}}disabled title="Войдите, чтобы добавить в избранное"{{/unless}}>
+    ★
+  </button>
+  
+  <a class="stretched-link" href="/books/{{id}}"></a>
+</article>

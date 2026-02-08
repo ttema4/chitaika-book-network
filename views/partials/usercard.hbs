@@ -1,0 +1,19 @@
+<article class="user-card">
+  <div class="user-card__avatar-box">
+    <img class="user-card__avatar" 
+         src="{{#if avatarUrl}}{{avatarUrl}}{{else}}{{#if avatar_url}}{{avatar_url}}{{else}}https://storage.yandexcloud.net/book-network/images/avatar.png{{/if}}{{/if}}" 
+         alt="Аватар пользователя {{username}}"
+         loading="lazy"
+         onerror="if(!this.dataset.retried){this.dataset.retried=true; this.src=this.src+'?t='+Date.now();}else{this.src='https://storage.yandexcloud.net/book-network/images/avatar.png'; this.onerror=null;}">
+  </div>
+  
+  <h3 class="user-card__title">{{username}}</h3>
+  
+  {{#if email}}
+  <p style="font-size: 0.9rem; color: var(--muted); margin-bottom: 1rem;">{{email}}</p>
+  {{/if}}
+
+  <div class="user-card__actions">
+    <a href="/users/{{id}}" class="btn-ghost stretched-link">Профиль</a>
+  </div>
+</article>

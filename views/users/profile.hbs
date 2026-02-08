@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="ru">
+{{> header title=user.username metaTitle=user.username}}
+
+    <main class="main">
+      <section class="section profile-section">
+          
+          <div class="profile-header-container">
+              
+              
+              <div class="profile-avatar-wrapper">
+                  <figure class="figure profile-figure">
+                      <img class="figure__img profile-img" 
+                          src="{{#if user.avatar_url}}{{user.avatar_url}}{{else}}https://storage.yandexcloud.net/book-network/images/avatar.png{{/if}}" 
+                          alt="Аватар {{user.username}}"
+                          loading="eager"
+                          onerror="if(!this.dataset.retried){this.dataset.retried=true; this.src=this.src+'?t='+Date.now();}else{this.src='https://storage.yandexcloud.net/book-network/images/avatar.png'; this.onerror=null;}">
+                  </figure>
+                  
+                  {{#if isOwner}}
+                  <form action="/users/{{user.id}}/avatar" method="POST" enctype="multipart/form-data" class="profile-avatar-edit">
+                       <label for="avatar-input" class="btn-edit-avatar" title="Сменить фото">
+                          <img src="https://storage.yandexcloud.net/book-network/images/pencil.png" alt="Edit">
+                       </label>
+                       <input id="avatar-input" type="file" name="avatar" accept="image/*" style="display: none;" onchange="this.form.submit()">
+                  </form>
+                  {{/if}}
+              </div>
+
+              
+              <div class="profile-info">
+                  <div style="display: flex; align-items: center; gap: 10px;">
+                      <h1 class="title profile-username">{{user.username}}</h1>
+                  </div>
+
+                  <p class="profile-email">{{user.email}}</p>
+                  
+                  
+                  <div class="profile-stats">
+                      <div class="stat-item subscribers">
+                          <div class="stat-value">{{user.subscribers.length}}</div>
+                          <div class="stat-label">Подписчиков</div>
+                      </div>
+                      
+                      <div class="stat-divider"></div>
+
+                      <div class="stat-item favorites">
+                          <div class="stat-value">{{user.favorites.length}}</div>
+                          <div class="stat-label">Избранное</div>
+                      </div>
+                      
+                      <div class="stat-divider"></div>
+                      
+                      <div class="stat-item read">
+                          <div class="stat-value">{{user.booksReadCount}}</div>
+                          <div class="stat-label">Прочитано</div>
+                      </div>
+                      
+                      <div class="stat-divider"></div>
+
+                      <div class="stat-item reviews">
+                          <div class="stat-value">0</div>
+                          <div class="stat-label">Рецензий</div>
+                      </div>
+
+                      {{#unless isOwner}}
+                      <div class="stat-divider"></div>
+                      {{#if isSubscribed}}
+                      <div class="stat-item subscribe-action" data-user-id="{{user.id}}" data-action="unsubscribe" style="cursor: pointer;">
+                          <div class="stat-icon">
+                              <img src="https://storage.yandexcloud.net/book-network/images/cross.png" alt="Unsubscribe" style="width: 20px; height: 20px;">
+                          </div>
+                          <div class="stat-label">Отписаться</div>
+                      </div>
+                      {{else}}
+                      <div class="stat-item subscribe-action" data-user-id="{{user.id}}" data-action="subscribe" style="cursor: pointer;">
+                          <div class="stat-icon">
+                              <img src="https://storage.yandexcloud.net/book-network/images/plus.png" alt="Subscribe" style="width: 20px; height: 20px;">
+                          </div>
+                          <div class="stat-label">Подписаться</div>
+                      </div>
+                      {{/if}}
+                      {{/unless}}
+                      
+                      {{#if isOwner}}
+                      <div class="stat-divider"></div>
+                      <a href="/logout" class="stat-item logout" title="Выйти из аккаунта">
+                          <div class="stat-icon">
+                              <img src="https://storage.yandexcloud.net/book-network/images/logout.png" alt="Logout" style="width: 20px; height: 20px;">
+                          </div>
+                          <div class="stat-label">Выйти</div>
+                      </a>
+                      {{/if}}
+                  </div>
+              </div>
+          </div>
+          
+          
+          {{#if user.favorites.length}}
+            <div class="profile-favorites-container">
+                 <h2 class="section__title separator-bottom">Избранное</h2>
+            
+                 <div class="grid grid--cards">
+                    {{#each user.favorites}}
+                      {{#with this.book}}
+                         {{> bookcard}}
+                      {{/with}}
+                    {{/each}}
+                 </div>
+            </div>
+          {{/if}}
+
+      </section>
+    </main>
+
+<script>
+    document.addEventListener('DOMContentLoaded', () => {
+        const subscribeBtn = document.querySelector('.subscribe-action');
+        if (subscribeBtn) {
+            subscribeBtn.addEventListener('click', async (e) => {
+                e.preventDefault();
+                const userId = subscribeBtn.dataset.userId;
+                const action = subscribeBtn.dataset.action;
+                const subscribersValueEl = document.querySelector('.stat-item.subscribers .stat-value');
+                
+                const isSubscribe = action === 'subscribe';
+                const url = isSubscribe ? `/users/friends/${userId}` : `/users/friends/${userId}/remove`;
+                
+                try {
+                    const response = await fetch(url, {
+                        method: 'POST',
+                        headers: {
+                            'Accept': 'application/json',
+                            'Content-Type': 'application/json'
+                        }
+                    });
+                    
+                    if (response.ok) {
+                        const newAction = isSubscribe ? 'unsubscribe' : 'subscribe';
+                        subscribeBtn.dataset.action = newAction;
+                        
+                        const img = subscribeBtn.querySelector('img');
+                        const label = subscribeBtn.querySelector('.stat-label');
+                        
+                        if (isSubscribe) {
+                            img.src = 'https://storage.yandexcloud.net/book-network/images/cross.png';
+                            img.alt = 'Unsubscribe';
+                            label.textContent = 'Отписаться';
+                            if (subscribersValueEl) subscribersValueEl.textContent = parseInt(subscribersValueEl.textContent) + 1;
+                        } else {
+                            img.src = 'https://storage.yandexcloud.net/book-network/images/plus.png';
+                            img.alt = 'Subscribe';
+                            label.textContent = 'Подписаться';
+                            if (subscribersValueEl) subscribersValueEl.textContent = Math.max(0, parseInt(subscribersValueEl.textContent) - 1);
+                        }
+                    }
+                } catch (err) {
+                    console.error('Failed to toggle subscription', err);
+                }
+            });
+        }
+    });
+</script>
+
+{{> footer}}
+</html>

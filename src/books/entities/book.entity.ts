@@ -15,10 +15,16 @@ export class Book {
   author: string;
 
   @Column({ name: 'cover_url', type: 'text', nullable: true })
-  cover_url: string;
+  cover_url: string | null;
 
   @Column({ name: 'text_url', type: 'text' })
   text_url: string;
+
+  @Column({ length: 100, nullable: true })
+  genre: string;
+
+  @Column({ type: 'text', nullable: true })
+  description: string;
 
   @OneToMany(() => Comment, (comment) => comment.book)
   comments: Comment[];

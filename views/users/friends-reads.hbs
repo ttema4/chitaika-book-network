@@ -1,0 +1,17 @@
+<!DOCTYPE html>
+<html lang="ru">
+{{> header title="Что читают друзья" metaTitle="Что читают друзья — Читайка"}}
+
+  <main class="main">
+    <section class="section" id="friends-reads">
+      <h2 class="section__title separator-bottom">Что читают друзья</h2>
+
+      <div class="grid grid--cards">
+        {{#each friendsReads}}
+             {{> bookcard this}}
+        {{/each}}
+      </div>
+    </section>
+  </main>
+{{> footer}}
+</html>

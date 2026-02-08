@@ -1,0 +1,20 @@
+<!DOCTYPE html>
+<html lang="ru">
+{{> header title="Каталог книг" metaTitle="Все книги — Читайка"}}
+
+    <section class="section" id="books">
+      <div class="section__header">
+        <h2 class="section__title">Каталог всех книг</h2>
+        <a href="/books/create" class="btn-small">Добавить книгу</a> 
+      </div>
+
+      <div class="grid grid--cards">
+        {{#each books}}
+            {{> bookcard this}}
+        {{else}}
+        <p>Список книг пуст. Будьте первыми!</p>
+        {{/each}}
+      </div>
+    </section>
+{{> footer}}
+</html>

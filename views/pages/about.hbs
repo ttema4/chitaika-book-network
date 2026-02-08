@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="ru">
+{{> header title="О проекте" metaTitle="Читайка - О проекте"}}
+
+  <main class="main">
+    <section class="section" id="about">
+      <h2 class="section__title separator-bottom">О проекте</h2>
+      <p class="lead" style="max-width: 800px; margin-bottom: 2rem;">
+        «Читайка» — уютное пространство для тех, кто не мыслит жизни без книг. <br>
+        Здесь мы делимся находками, обсуждаем прочитанное и находим друзей по интересам.
+      </p>
+
+      <div style="display: flex; flex-direction: column; gap: 1.5rem; margin-top: 2rem;">
+          <div style="background: #eff6ff; padding: 2rem; border-radius: 20px; transition: transform 0.2s;" onmouseover="this.style.transform='scale(1.01)'" onmouseout="this.style.transform='scale(1)'">
+              <h3 class="section__subtitle" style="margin-top: 0; color: #1e3a8a; font-weight: 800; font-size: 1.25rem; margin-bottom: 0.5rem;">01. Исследуй</h3>
+              <p style="color: #3b5585; margin: 0; font-weight: 500;">Находи новые книги, читай отзывы и составляй свой список чтения.</p>
+          </div>
+          
+          <div style="background: #f0fdf4; padding: 2rem; border-radius: 20px; transition: transform 0.2s;" onmouseover="this.style.transform='scale(1.01)'" onmouseout="this.style.transform='scale(1)'">
+              <h3 class="section__subtitle" style="margin-top: 0; color: #14532d; font-weight: 800; font-size: 1.25rem; margin-bottom: 0.5rem;">02. Делись</h3>
+              <p style="color: #355e4b; margin: 0; font-weight: 500;">Оставляй рецензии, ставь оценки и рекомендуй лучшее друзьям.</p>
+          </div>
+          
+          <div style="background: #f5f3ff; padding: 2rem; border-radius: 20px; transition: transform 0.2s;" onmouseover="this.style.transform='scale(1.01)'" onmouseout="this.style.transform='scale(1)'">
+              <h3 class="section__subtitle" style="margin-top: 0; color: #4c1d95; font-weight: 800; font-size: 1.25rem; margin-bottom: 0.5rem;">03. Общайся</h3>
+              <p style="color: #5b4e7e; margin: 0; font-weight: 500;">Подписывайся на интересных читателей и следи за их обновлениями.</p>
+          </div>
+      </div>
+
+    </section>
+  </main>
+{{> footer}}
+</html>
