@@ -6,6 +6,7 @@ import { BooksService } from './books.service';
 import { FilesService } from '../files/files.service';
 import { AuthGuard } from '../auth/auth.guard';
 import { FavoritesService } from '../favorites/favorites.service';
+import { UserBooksService } from '../user-books/user-books.service';
 
 @Controller('books')
 export class BooksController {
@@ -13,6 +14,7 @@ export class BooksController {
     private readonly booksService: BooksService,
     private readonly filesService: FilesService,
     private readonly favoritesService: FavoritesService,
+    private readonly userBooksService: UserBooksService,
   ) {}
 
   @Sse('events')
@@ -108,13 +110,21 @@ export class BooksController {
   @Render('books/detail')
   async findOne(@Param('id') id: string, @Req() req: Request) {
     const book = await this.booksService.findOne(+id);
+    let isFavorite = false;
+    let userBookStatus = 'none';
     
-    if ((req as any).user) {
-         const isFav = await this.favoritesService.isFavorite((req as any).user.id, +id);
-         return { book: { ...book, isFavorite: isFav } };
+    // @ts-ignore
+    if (req.user) {
+         // @ts-ignore
+         const userId = req.user.id;
+         isFavorite = await this.favoritesService.isFavorite(userId, +id);
+         const userBook = await this.userBooksService.findOne(userId, +id);
+         if (userBook) {
+             userBookStatus = userBook.status;
+         }
     }
 
-    return { book };
+    return { book: { ...book, isFavorite, userBookStatus } };
   }
 
   @Get(':id/edit')

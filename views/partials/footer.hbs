@@ -10,34 +10,4 @@
       © <time datetime="2026-01-01">2026</time> «Читайка». Все права защищены.
     </p>
   </footer>
-  
-  <script>
-    // Simple script to demonstrate active link based on current URL
-    document.addEventListener('DOMContentLoaded', () => {
-        const links = document.querySelectorAll('.nav__link');
-        const currentPath = window.location.pathname;
-        links.forEach(link => {
-            if (link.getAttribute('href') === currentPath) {
-                link.classList.add('nav__link--active');
-            } else {
-                link.classList.remove('nav__link--active');
-            }
-        });
-
-        const eventSource = new EventSource('/books/events');
-        eventSource.onmessage = ({ data }) => {
-            console.log('New message', data);
-            const message = JSON.parse(data);
-            Toastify({
-                text: `📚 Новая книга: ${message.title} (${message.author})`,
-                duration: 5000,
-                gravity: "top", 
-                position: "right", 
-                style: {
-                    background: "#0d6efd",
-                }
-            }).showToast();
-        };
-    });
-  </script>
 </body>

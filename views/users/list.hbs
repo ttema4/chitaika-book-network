@@ -4,39 +4,6 @@
 
   <main class="main">
     
-
-    
-    {{#if friends.length}}
-    <section class="section">
-      <h2 class="section__title separator-bottom">Мои подписки</h2>
-      <div class="grid grid--cards">
-        {{#each friends}}
-            <article class="card user-card">
-              <a href="/users/{{this.id}}" class="stretched-link" aria-label="Профиль {{this.username}}"></a>
-              <div class="user-card__avatar-box">
-                <img class="user-card__avatar" src="{{#if this.avatar_url}}{{this.avatar_url}}{{else}}https://storage.yandexcloud.net/book-network/images/avatar.png{{/if}}" alt="Фото {{this.username}}">
-                {{#if this.isFriend}}
-                      <span class="user-card__badge">Подписка</span>
-                {{/if}}
-              </div>
-              <h3 class="user-card__title">{{this.username}}</h3>
-
-              <div class="user-card__actions">
-                  <button type="button" 
-                          class="btn btn--danger friend-btn" 
-                          style="width: 100%; border-radius: 99px;"
-                          data-user-id="{{this.id}}"
-                          data-username="{{this.username}}"
-                          data-action="remove">Отписаться</button>
-              </div>
-            </article>
-        {{/each}}
-      </div>
-    </section>
-    <hr class="divider">
-    {{/if}}
-
-    
     <section class="section">
       <h2 class="section__title separator-bottom">Все читатели</h2>
       <div class="grid grid--cards">

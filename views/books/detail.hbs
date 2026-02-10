@@ -16,16 +16,46 @@
                 <img class="book-detail-img" src="https://storage.yandexcloud.net/book-network/images/cover.png" alt="Обложка по умолчанию" style="background: #eee;">
             {{/if}}
             </figure>
+
+            <div class="profile-stats status-widget" data-book-id="{{book.id}}" data-current-status="{{book.userBookStatus}}">
+                <div class="stat-item status-option" data-status="none" title="Не читал">
+                    <div class="stat-value">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/></svg>
+                    </div>
+                    <div class="stat-label">Не читал</div>
+                </div>
+                
+                <div class="stat-item status-option" data-status="planned" title="В планах">
+                    <div class="stat-value">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+                    </div>
+                    <div class="stat-label">В планах</div>
+                </div>
+
+                <div class="stat-item status-option" data-status="reading" title="Читаю">
+                    <div class="stat-value">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>
+                    </div>
+                    <div class="stat-label">Читаю</div>
+                </div>
+
+                <div class="stat-item status-option" data-status="read" title="Прочитал">
+                    <div class="stat-value">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>
+                    </div>
+                    <div class="stat-label">Прочитал</div>
+                </div>
+            </div>
         </div>
 
         
         <div class="book-detail-info">
-            <div>
-                <h2 class="section__title book-detail-title">{{book.title}}</h2>
-                <p class="card__meta book-detail-author">Автор: {{book.author}}</p>
+            <div style="position: relative;">
+                <h2 class="section__title book-detail-title" style="padding-right: 120px;">{{book.title}}</h2>
                 {{#if book.genre}}
-                <p class="card__meta book-detail-genre">Жанр: {{book.genre}}</p>
+                <span class="book-detail-genre">{{book.genre}}</span>
                 {{/if}}
+                <p class="card__meta book-detail-author">Автор: {{book.author}}</p>
             </div>
 
             {{#if book.description}}

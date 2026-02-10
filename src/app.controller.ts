@@ -2,6 +2,7 @@ import { Controller, Get, Render, Req } from '@nestjs/common';
 import { AppService } from './app.service';
 import { BooksService } from './books/books.service';
 import { FavoritesService } from './favorites/favorites.service';
+import { UserBooksService } from './user-books/user-books.service';
 import type { Request } from 'express';
 
 @Controller()
@@ -10,12 +11,14 @@ export class AppController {
     private readonly appService: AppService,
     private readonly booksService: BooksService,
     private readonly favoritesService: FavoritesService,
+    private readonly userBooksService: UserBooksService,
   ) {}
 
   @Get()
   @Render('pages/index')
   async root(@Req() req: Request) {
     let books = await this.booksService.findAll();
+    const readingNow = await this.userBooksService.findLatestReading();
     
     // @ts-ignore
     if (req.user) {
@@ -30,19 +33,24 @@ export class AppController {
 
     const newBooks = books.slice(-6).reverse();
 
+    const friendsBooks = readingNow.map(ub => ({
+        id: ub.book.id,
+        title: ub.book.title,
+        author: ub.book.author,
+        coverUrl: ub.book.cover_url,
+        genre: ub.book.genre,
+        description: ub.book.description,
+        friendName: ub.user.username,
+        friendId: ub.user.id
+    }));
+
+    const popularBooks = await this.booksService.findMostPopular(4);
+
     return {
+      readingNow,
       newBooks,
-      friendsBooks: [
-        { id: 7, title: 'Летний архив', author: 'И. Память', cover_url: 'https://storage.yandexcloud.net/book-network/images/cover.png', genre: 'Современная проза', description: 'Небольшой город, тёплое лето и находка.', friendName: 'Аня П.', friendId: 1 },
-        { id: 8, title: 'Прах и звёзды', author: 'Р. Космосов', cover_url: 'https://storage.yandexcloud.net/book-network/images/cover.png', genre: 'Научная фантастика', description: 'Экспедиция к далёкой туманности.', friendName: 'Дима К.', friendId: 2 },
-        { id: 9, title: 'Тихие улицы', author: 'М. Городская', cover_url: 'https://storage.yandexcloud.net/book-network/images/cover.png', genre: 'Роман', description: 'Истории соседей, которые мы обычно не замечаем.', friendName: 'Марина С.', friendId: 3 },
-        { id: 3, title: 'Город без алиби', author: 'В. Следователь', cover_url: 'https://storage.yandexcloud.net/book-network/images/cover.png', genre: 'Детектив', description: 'Ночной мегаполис, одно преступление.', friendName: 'Олег В.', friendId: 4 },
-      ],
-      weeklyPicks: [
-        { id: 10, title: 'Мастер и Маргарита', author: 'М.А. Булгаков', cover_url: 'https://storage.yandexcloud.net/book-network/images/cover.png', genre: 'Мистика', description: 'Классика, которую должен прочитать каждый.' },
-        { id: 11, title: '1984', author: 'Дж. Оруэлл', cover_url: 'https://storage.yandexcloud.net/book-network/images/cover.png', genre: 'Антиутопия', description: 'Классика антиутопического жанра.' },
-        { id: 12, title: 'Убийство в Восточном экспрессе', author: 'А. Кристи', cover_url: 'https://storage.yandexcloud.net/book-network/images/cover.png', genre: 'Детектив', description: 'Один из самых известных романов Агаты Кристи.' },
-      ]
+      friendsBooks,
+      weeklyPicks: popularBooks
     };
   }
 
@@ -55,14 +63,24 @@ export class AppController {
 
   @Get('friends-reads')
   @Render('users/friends-reads')
-  friendsReads() {
+  async friendsReads() {
+    const reads = await this.userBooksService.findLatestReading(); 
+    
+    const friendsReads = reads.map(ub => ({
+        id: ub.book.id,
+        title: ub.book.title,
+        author: ub.book.author,
+        coverUrl: ub.book.cover_url,
+        genre: ub.book.genre,
+        description: ub.book.description,
+        friendName: ub.user.username,
+        friendId: ub.user.id,
+        status: ub.status,
+        date: ub.updatedAt
+    }));
+
     return {
-      friendsReads: [
-        { id: 7, title: 'Летний архив', author: 'И. Память', coverUrl: 'https://storage.yandexcloud.net/book-network/images/cover.png', genre: 'Современная проза', description: 'Небольшой город, тёплое лето и находка.', friendName: 'Аня П.', friendId: 1 },
-        { id: 8, title: 'Прах и звёзды', author: 'Р. Космосов', coverUrl: 'https://storage.yandexcloud.net/book-network/images/cover.png', genre: 'Научная фантастика', description: 'Экспедиция к далёкой туманности.', friendName: 'Дима К.', friendId: 2 },
-        { id: 9, title: 'Тихие улицы', author: 'М. Городская', coverUrl: 'https://storage.yandexcloud.net/book-network/images/cover.png', genre: 'Роман', description: 'Истории соседей, которые мы обычно не замечаем.', friendName: 'Марина С.', friendId: 3 },
-        { id: 3, title: 'Город без алиби', author: 'В. Следователь', coverUrl: 'https://storage.yandexcloud.net/book-network/images/cover.png', genre: 'Детектив', description: 'Ночной мегаполис, одно преступление.', friendName: 'Олег В.', friendId: 4 },
-      ]
+      friendsReads
     };
   }
 

@@ -3,91 +3,93 @@
 {{> header title="Главная" metaTitle="Читайка — книжная соцсеть"}}
 
   <main class="main">
-    <section class="section section--accent" id="new">
+    
+    <div class="hero-card">
+      <div class="hero-card__bg"></div>
+      <div class="hero-card__content">
+        <h1 class="hero-title">Открывайте новые миры вместе с друзьями</h1>
+        <p class="hero-subtitle">
+          Читайка — это место, где книги оживают в обсуждениях. 
+          Следите за тем, что читают ваши друзья, делитесь находками.
+        </p>
+        <a href="/books" class="hero-btn">Смотреть каталог</a>
+      </div>
+    </div>
+
+    <div class="features-grid">
+         <a href="/books" class="feature-card">
+             <div class="feature-icon">📚</div>
+             <div class="feature-info">
+                 <span class="feature-title">Библиотека</span>
+                 <span class="feature-desc">Тысячи книг</span>
+             </div>
+         </a>
+         <a href="#new" class="feature-card">
+             <div class="feature-icon">🔥</div>
+             <div class="feature-info">
+                 <span class="feature-title">Новинки</span>
+                 <span class="feature-desc">Свежие поступления</span>
+             </div>
+         </a>
+         <a href="#friends" class="feature-card">
+             <div class="feature-icon">👥</div>
+             <div class="feature-info">
+                 <span class="feature-title">Друзья</span>
+                 <span class="feature-desc">Что читают другие</span>
+             </div>
+         </a>
+         <a href="/users/me" class="feature-card">
+             <div class="feature-icon">✨</div>
+             <div class="feature-info">
+                 <span class="feature-title">Избранное</span>
+                 <span class="feature-desc">Ваша коллекция</span>
+             </div>
+         </a>
+    </div>
+
+    <section class="section">
       <div class="section__header">
-        <h2 class="section__title">Новые книги</h2>
+        <h2 class="section__title">Рейтинг недели</h2>
         <a href="/books" class="btn-small">Все книги →</a>
       </div>
-      <p class="lead">
-        Здесь собраны <strong>горячие новинки</strong> последнего месяца. <br>
-        Если вы любите эксперименты, смело добавляйте их в список чтения — 
-        многие из них уже <em>в топе сообщества</em>.
-      </p>
-
-      <aside class="promo" role="complementary" aria-label="Промо">
-        <div>
-          <strong>Подборка недели:</strong> 10 книг, которые обсуждают в клубах.
-        </div>
-        <a class="btn-ghost" href="#weekly">Смотреть подборку</a>
-      </aside>
-
-      <div class="section__sticky section__sticky--genres" role="region" aria-label="Фильтры по жанрам">
-        <strong class="sticky-label">Жанры:</strong>
-        <div class="sticky-scroller">
-          <a class="tags__link" href="#genre-fantasy">Фэнтези</a>
-          <a class="tags__link" href="#genre-sci-fi">Научная фантастика</a>
-          <a class="tags__link" href="#genre-detective">Детектив</a>
-          <a class="tags__link" href="#genre-nonfiction">Нон-фикшн</a>
-          <a class="tags__link" href="#genre-classic">Классика</a>
-          <a class="tags__link" href="#genre-horror">Ужасы</a>
-        </div>
-      </div>
-
-      <div class="h-scroll" aria-label="Лента новых книг">
-        {{#each newBooks}}
-            {{> bookcard this}}
-        {{/each}}
-      </div>
-
-      <aside class="tip">
-        <h3 class="tip__title">Подсказка</h3>
-        <p class="tip__text">Чтобы не потеряться, используйте навигацию по жанрам выше.</p>
-        <ol class="tip__steps">
-          <li>Выберите жанр.</li>
-          <li>Откройте карточку книги.</li>
-          <li>Добавьте её в «Хочу прочитать».</li>
-        </ol>
-      </aside>
-    </section>
-
-    <section class="section" id="friends">
-      <div class="section__header">
-        <h2 class="section__title">Что читают друзья?</h2>
-        <a href="/friends-reads" class="btn-small">Все книги друзей →</a>
-      </div>
-
-      <p>Лента формируется <em>на основе подписок</em> и отметок «Читаю».</p>
-
-      <div class="section__sticky section__sticky--friends" role="region" aria-label="Фильтры ленты">
-        <strong class="sticky-label">Жанры:</strong>
-        <div class="sticky-scroller">
-          <a class="tags__link" href="#friends">Все</a>
-          <a class="tags__link" href="#friends-sci">Sci-Fi</a>
-          <a class="tags__link" href="#friends-prose">Проза</a>
-          <a class="tags__link" href="#friends-detective">Детектив</a>
-        </div>
-      </div>
-
-      <div class="h-scroll" aria-label="Лента: что читают друзья">
-        {{#each friendsBooks}}
-            {{> bookcard this}}
-        {{/each}}
-      </div>
-
-      <hr class="separator">
-    </section>
-
-    <section class="section" aria-labelledby="picks-title">
-      <div class="section__header">
-        <h2 id="picks-title" class="section__title">Подборка недели</h2>
-      </div>
-
       <div class="h-scroll" aria-label="Лента подборки недели">
         {{#each weeklyPicks}}
             {{> bookcard this}}
         {{/each}}
       </div>
     </section>
+
+    <section class="section" id="friends">
+      <div class="section__header">
+        <h2 class="section__title">Что читают друзья</h2>
+        <a href="/friends-reads" class="btn-small">Показать все →</a>
+      </div>
+
+      {{#if friendsBooks.length}}
+      <div class="h-scroll" aria-label="Лента: что читают друзья">
+        {{#each friendsBooks}}
+            {{> bookcard this}}
+        {{/each}}
+      </div>
+      {{else}}
+        <p class="lead" style="font-size: 0.95rem; color: var(--muted);">
+            Здесь будут появляться книги, которые читают ваши друзья. <a href="/users">Найдите единомышленников</a>, чтобы оживить ленту!
+        </p>
+      {{/if}}
+    </section>
+
+    <section class="section" id="new">
+      <div class="section__header">
+        <h2 class="section__title">Новинки</h2>
+      </div>
+      
+      <div class="h-scroll" aria-label="Лента новых книг">
+        {{#each newBooks}}
+            {{> bookcard this}}
+        {{/each}}
+      </div>
+    </section>
+
   </main>
 
 {{> footer}}

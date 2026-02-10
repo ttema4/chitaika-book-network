@@ -44,17 +44,17 @@
                       
                       <div class="stat-divider"></div>
 
-                      <div class="stat-item favorites">
+                      <a href="#favorites" class="stat-item favorites">
                           <div class="stat-value">{{user.favorites.length}}</div>
                           <div class="stat-label">Избранное</div>
-                      </div>
+                      </a>
                       
                       <div class="stat-divider"></div>
                       
-                      <div class="stat-item read">
+                      <a href="#read" class="stat-item read">
                           <div class="stat-value">{{user.booksReadCount}}</div>
                           <div class="stat-label">Прочитано</div>
-                      </div>
+                      </a>
                       
                       <div class="stat-divider"></div>
 
@@ -96,71 +96,102 @@
           </div>
           
           
+          {{#if user.reading.length}}
+            <section class="section collapsible-section" id="reading">
+                <div class="collapsible-header">
+                     <h2 class="section__title separator-bottom" style="margin:0; border:none; padding:0;">Читаю сейчас</h2>
+                     <div class="collapsible-chevron">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                    </div>
+                </div>
+                <div class="collapsible-content">
+                     <div class="grid--cards" style="margin-top: 20px;">
+                        {{#each user.reading}}
+                             {{> bookcard}}
+                        {{/each}}
+                     </div>
+                </div>
+            </section>
+          {{/if}}
+
           {{#if user.favorites.length}}
-            <div class="profile-favorites-container">
-                 <h2 class="section__title separator-bottom">Избранное</h2>
-            
-                 <div class="grid grid--cards">
-                    {{#each user.favorites}}
-                      {{#with this.book}}
-                         {{> bookcard}}
-                      {{/with}}
-                    {{/each}}
-                 </div>
-            </div>
+            <section class="section collapsible-section" id="favorites">
+                <div class="collapsible-header">
+                     <h2 class="section__title separator-bottom" style="margin:0; border:none; padding:0;">Избранное</h2>
+                     <div class="collapsible-chevron">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                    </div>
+                </div>
+                <div class="collapsible-content">
+                     <div class="grid--cards" style="margin-top: 20px;">
+                        {{#each user.favorites}}
+                          {{#with this.book}}
+                             {{> bookcard}}
+                          {{/with}}
+                        {{/each}}
+                     </div>
+                </div>
+            </section>
+          {{/if}}
+
+          {{#if user.readBooks.length}}
+            <section class="section collapsible-section is-collapsed" id="read">
+                <div class="collapsible-header">
+                     <h2 class="section__title separator-bottom" style="margin:0; border:none; padding:0;">Прочитано</h2>
+                     <div class="collapsible-chevron">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                    </div>
+                </div>
+                <div class="collapsible-content">
+                     <div class="grid--cards" style="margin-top: 20px;">
+                        {{#each user.readBooks}}
+                             {{> bookcard}}
+                        {{/each}}
+                     </div>
+                </div>
+            </section>
+          {{/if}}
+          
+          {{#if user.planned.length}}
+            <section class="section collapsible-section is-collapsed" id="planned">
+                <div class="collapsible-header">
+                     <h2 class="section__title separator-bottom" style="margin:0; border:none; padding:0;">Планирую прочитать</h2>
+                     <div class="collapsible-chevron">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                    </div>
+                </div>
+                <div class="collapsible-content">
+                     <div class="grid--cards" style="margin-top: 20px;">
+                        {{#each user.planned}}
+                             {{> bookcard}}
+                        {{/each}}
+                     </div>
+                </div>
+            </section>
+          {{/if}}
+
+          {{#if recommendations.length}}
+            {{#if isOwner}} 
+            <section class="section collapsible-section" id="recs">
+                <div class="collapsible-header">
+                     <h2 class="section__title separator-bottom" style="margin:0; border:none; padding:0;">Друзья читают</h2>
+                     <div class="collapsible-chevron">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                    </div>
+                </div>
+                <div class="collapsible-content">
+                     <div class="grid--cards" style="margin-top: 20px;">
+                        {{#each recommendations}}
+                             {{> bookcard friendName=this.recommender.username friendId=this.recommender.id}}
+                        {{/each}}
+                     </div>
+                </div>
+            </section>
+            {{/if}}
           {{/if}}
 
       </section>
     </main>
-
-<script>
-    document.addEventListener('DOMContentLoaded', () => {
-        const subscribeBtn = document.querySelector('.subscribe-action');
-        if (subscribeBtn) {
-            subscribeBtn.addEventListener('click', async (e) => {
-                e.preventDefault();
-                const userId = subscribeBtn.dataset.userId;
-                const action = subscribeBtn.dataset.action;
-                const subscribersValueEl = document.querySelector('.stat-item.subscribers .stat-value');
-                
-                const isSubscribe = action === 'subscribe';
-                const url = isSubscribe ? `/users/friends/${userId}` : `/users/friends/${userId}/remove`;
-                
-                try {
-                    const response = await fetch(url, {
-                        method: 'POST',
-                        headers: {
-                            'Accept': 'application/json',
-                            'Content-Type': 'application/json'
-                        }
-                    });
-                    
-                    if (response.ok) {
-                        const newAction = isSubscribe ? 'unsubscribe' : 'subscribe';
-                        subscribeBtn.dataset.action = newAction;
-                        
-                        const img = subscribeBtn.querySelector('img');
-                        const label = subscribeBtn.querySelector('.stat-label');
-                        
-                        if (isSubscribe) {
-                            img.src = 'https://storage.yandexcloud.net/book-network/images/cross.png';
-                            img.alt = 'Unsubscribe';
-                            label.textContent = 'Отписаться';
-                            if (subscribersValueEl) subscribersValueEl.textContent = parseInt(subscribersValueEl.textContent) + 1;
-                        } else {
-                            img.src = 'https://storage.yandexcloud.net/book-network/images/plus.png';
-                            img.alt = 'Subscribe';
-                            label.textContent = 'Подписаться';
-                            if (subscribersValueEl) subscribersValueEl.textContent = Math.max(0, parseInt(subscribersValueEl.textContent) - 1);
-                        }
-                    }
-                } catch (err) {
-                    console.error('Failed to toggle subscription', err);
-                }
-            });
-        }
-    });
-</script>
 
 {{> footer}}
 </html>

@@ -2,6 +2,7 @@ import { Entity, PrimaryGeneratedColumn, Column, OneToMany, ManyToMany, JoinTabl
 import { Comment } from '../../comments/entities/comment.entity';
 import { Favorite } from '../../favorites/entities/favorite.entity';
 import { Rating } from '../../ratings/entities/rating.entity';
+import { UserBook } from '../../user-books/entities/user-book.entity';
 
 @Entity({ name: 'users' })
 export class User {
@@ -37,7 +38,6 @@ export class User {
   @ManyToMany(() => User, (user) => user.friends)
   subscribers: User[];
 
-  // Relations (optional for now but good for ORM)
   @OneToMany(() => Comment, (comment) => comment.user)
   comments: Comment[];
 
@@ -46,4 +46,7 @@ export class User {
 
   @OneToMany(() => Rating, (rating) => rating.user)
   ratings: Rating[];
+
+  @OneToMany(() => UserBook, (userBook) => userBook.user)
+  userBooks: UserBook[];
 }

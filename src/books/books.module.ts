@@ -5,12 +5,14 @@ import { BooksController } from './books.controller';
 import { BooksService } from './books.service';
 import { FilesModule } from '../files/files.module';
 import { FavoritesModule } from '../favorites/favorites.module';
+import { UserBooksModule } from '../user-books/user-books.module';
 
 @Module({
   imports: [
     TypeOrmModule.forFeature([Book]),
     FilesModule,
-    FavoritesModule
+    FavoritesModule,
+    UserBooksModule
   ],
   controllers: [BooksController],
   providers: [BooksService],

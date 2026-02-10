@@ -13,6 +13,7 @@ import { FilesModule } from './files/files.module';
 import { AuthModule } from './auth/auth.module';
 import { AuthMiddleware } from './auth/auth.middleware';
 import { SupertokensMiddleware } from './auth/supertokens.middleware';
+import { UserBooksModule } from './user-books/user-books.module';
 
 @Module({
   imports: [
@@ -29,6 +30,7 @@ import { SupertokensMiddleware } from './auth/supertokens.middleware';
     FavoritesModule,
     FilesModule,
     AuthModule,
+    UserBooksModule,
   ],
   controllers: [AppController],
   providers: [

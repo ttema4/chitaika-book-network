@@ -263,7 +263,7 @@ a:hover { text-decoration: underline; }
 
 a.stat-item { cursor: pointer; }
 
-.stat-item:not(.logout):hover { transform: none; }
+.stat-item:hover { transform: translateY(-2px); text-decoration: none; }
 
 .stat-value {
   font-size: 1.8rem;
@@ -286,6 +286,16 @@ a.stat-item { cursor: pointer; }
 .stat-item.favorites .stat-value { color: #5c7cfa; }
 .stat-item.read .stat-value { color: #d97706; }
 .stat-item.reviews .stat-value { color: #a78bfa; }
+
+a.stat-item:hover .stat-value,
+a.stat-item:hover .stat-label {
+    text-decoration: none;
+    color: inherit; /* Prevent blue color on hover */
+}
+/* Ensure colors persist on hover for links */
+a.stat-item.subscribers:hover .stat-value { color: #4b9c7b; }
+a.stat-item.favorites:hover .stat-value { color: #5c7cfa; }
+a.stat-item.read:hover .stat-value { color: #d97706; }
 
 .stat-item.logout {
   transition: all 0.2s ease;
@@ -1342,30 +1352,39 @@ form.card {
 }
 
 .book-detail-container {
-  max-width: 900px;
+  max-width: 960px; /* Slight increase for wider cover */
   margin: 0 auto;
   display: flex;
   gap: 2rem;
   flex-wrap: wrap;
-  align-items: stretch;
+  align-items: stretch; /* Both columns equal height */
 }
 .book-detail-cover {
-  flex: 0 0 300px;
+  flex: 0 0 350px; /* Wider cover column */
   width: 100%;
-  max-width: 300px;
+  max-width: 350px;
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem; /* Restored gap for separation */
 }
 .book-detail-figure {
   margin: 0;
   width: 100%;
   aspect-ratio: 2/3;
   overflow: hidden;
-  border-radius: 8px;
-  box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1);
+  border-radius: 12px;
+  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+  background: #f3f4f6; 
+  transition: transform 0.3s ease;
+}
+.book-detail-figure:hover {
+    transform: scale(1.02); /* Subtle interaction hint */
 }
 .book-detail-img {
   width: 100%;
   height: 100%;
   object-fit: cover;
+  display: block;
 }
 .book-detail-info {
   flex: 1;
@@ -1376,33 +1395,115 @@ form.card {
 }
 .book-detail-title {
   text-align: left;
-  margin-bottom: 0.5rem;
+  margin-bottom: 0.25rem;
+  font-size: clamp(1.8rem, 4vw, 2.5rem);
+  line-height: 1.1;
+  letter-spacing: -0.02em;
+  margin-top: -0.25rem;
+  padding-right: 120px; /* Space for absolute positioned genre pill */
 }
 .book-detail-author {
-  font-size: 1.25rem;
+  font-size: 1.1rem;
+  color: #4b5563;
+  margin-bottom: 1rem;
 }
 .book-detail-genre {
-  margin-top: 0.5rem;
-  color: #666;
+  display: inline-block;
+  background: #f3f4f6;
+  padding: 6px 16px;
+  border-radius: 99px; /* Oval pill shape */
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: #4b5563;
+  border: 1px solid transparent; 
+  text-decoration: none;
+  
+  /* Absolute position top-right */
+  position: absolute;
+  top: 0;
+  right: 0;
+  margin: 0;
 }
 .book-description {
-  line-height: 1.6;
+  line-height: 1.7;
+  color: #374151;
+  font-size: 1rem;
+  margin-top: 1.5rem; 
+  padding-top: 1.5rem;
+  border-top: 1px solid #e5e7eb; 
 }
 .book-description-title {
   font-size: 1.1rem;
-  font-weight: 600;
-  margin-bottom: 0.5rem;
+  font-weight: 700;
+  margin-bottom: 0.75rem;
+  color: #111827;
 }
 .book-description-text {
   white-space: pre-wrap;
 }
 .book-actions {
-  margin-top: auto;
-  padding-top: 1.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  width: 100%;
+  margin-top: auto; /* Push to bottom to align with left column bottom */
 }
 .book-action-read {
-  margin-bottom: 1rem;
   width: 100%;
+  box-sizing: border-box; 
+  padding: 14px;
+  font-size: 1.05rem;
+  font-weight: 600;
+  border-radius: 12px;
+  /* Reverting to standard .btn-primary style for consistency */
+  letter-spacing: 0.01em;
+  text-align: center;
+  margin-bottom: 0; 
+  transition: all 0.2s ease;
+}
+.book-action-read:hover {
+  transform: translateY(-2px);
+  /* Hover effects handled by .btn-primary */
+}
+.book-action-row {
+  display: flex;
+  gap: 12px;
+  width: 100%;
+}
+.book-action-row > * {
+  flex: 1; 
+}
+.book-action-edit, .book-action-delete-btn {
+  border-radius: 12px;
+  padding: 12px 16px;
+  font-size: 0.95rem;
+  font-weight: 600;
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--ink); 
+  border: 1px solid var(--border);
+  background: transparent;
+  transition: all 0.2s ease;
+}
+.book-action-edit {
+   color: var(--ink);
+}
+.book-action-edit:hover {
+    background: var(--bg-surface-2);
+    border-color: var(--primary);
+    color: var(--primary);
+    text-decoration: none;
+}
+.book-action-delete-btn {
+    color: #ef4444; 
+    border-color: #fecaca;
+}
+.book-action-delete-btn:hover {
+    background: #fef2f2;
+    border-color: #ef4444;
+    color: #dc2626;
 }
 .book-action-row {
   display: flex;
@@ -1419,3 +1520,250 @@ form.card {
 .book-action-delete-btn {
   width: 100%;
 }
+
+/* New Status Widget (Profile Style) */
+.status-widget {
+  max-width: 100%;
+  margin-top: auto; /* Aligned to bottom to match buttons */
+  margin-bottom: 0;
+  display: flex !important;
+  justify-content: space-between; 
+  gap: 8px; 
+  padding: 0 !important;
+  cursor: default;
+  background: transparent;
+  border: none;
+  box-shadow: none !important; 
+}
+.status-widget:hover {
+  box-shadow: none !important;
+}
+
+/* Restoring Colors for Interaction */
+.status-widget .stat-item {
+  cursor: pointer;
+  opacity: 1; 
+  transition: all 0.2s cubic-bezier(0.25, 0.8, 0.25, 1);
+  flex: 1; 
+  display: flex;
+  flex-direction: column; 
+  align-items: center;
+  justify-content: center;
+  gap: 6px; 
+  padding: 10px 4px; 
+  background: transparent;
+  border: 1px solid transparent; 
+  border-radius: 12px;
+  color: #9ca3af; 
+  text-align: center;
+  position: relative;
+}
+
+.status-widget .stat-item .stat-value,
+.status-widget .stat-item .stat-label {
+    color: inherit;
+    transition: color 0.2s;
+}
+
+/* Explicitly disable box-shadow on hover for container */
+.status-widget .stat-item:hover {
+  transform: translateY(-2px);
+  background: transparent; /* Transparent hover background to look cleaner "less dirty" */
+  text-decoration: none;
+  box-shadow: none !important; 
+}
+
+/* Active State Styles - Restoring Colors */
+.status-option[data-status="planned"].is-active, 
+.status-option[data-status="planned"]:hover {
+  color: #2563eb !important;
+}
+.status-option[data-status="planned"].is-active .stat-value svg,
+.status-option[data-status="planned"]:hover .stat-value svg {
+    stroke: #2563eb;
+}
+
+.status-option[data-status="reading"].is-active,
+.status-option[data-status="reading"]:hover {
+  color: #d97706 !important;
+}
+.status-option[data-status="reading"].is-active .stat-value svg,
+.status-option[data-status="reading"]:hover .stat-value svg {
+    stroke: #d97706;
+}
+
+.status-option[data-status="read"].is-active,
+.status-option[data-status="read"]:hover {
+  color: #16a34a !important;
+}
+.status-option[data-status="read"].is-active .stat-value svg,
+.status-option[data-status="read"]:hover .stat-value svg {
+    stroke: #16a34a;
+}
+
+.status-option[data-status="none"].is-active,
+.status-option[data-status="none"]:hover {
+  color: #4b5563 !important;
+}
+
+/* Background for Active items mostly white/subtle */
+.status-option.is-active {
+    background: #fff;
+    border-color: #e5e7eb;
+    box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1); 
+}
+
+
+
+/* Collapsible Sections */
+.collapsible-header {
+  cursor: pointer;
+  user-select: none;
+  display: flex !important;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.collapsible-header:hover {
+  opacity: 0.8;
+}
+
+.collapsible-chevron {
+  transition: transform 0.3s ease;
+  width: 24px; 
+  height: 24px;
+  display: flex;
+  align-items: center; justify-content: center;
+  border-radius: 50%;
+  background: var(--gray-100);
+  color: var(--gray-500);
+}
+
+.section.is-collapsed .collapsible-chevron {
+  transform: rotate(-90deg);
+}
+
+.collapsible-content {
+  transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+  overflow: hidden;
+  max-height: 2000px; /* Arbitrary large height */
+  opacity: 1;
+}
+
+.section.is-collapsed .collapsible-content {
+  max-height: 0;
+  opacity: 0;
+  margin: 0;
+  padding: 0;
+}
+
+/* Homepage Hero "Juice" */
+.hero-card {
+  background: linear-gradient(135deg, #1e1b4b 0%, #312e81 100%);
+  color: white;
+  border-radius: 20px;
+  padding: 32px;
+  margin-top: 24px;
+  margin-bottom: 32px;
+  position: relative;
+  overflow: hidden;
+  box-shadow: 0 20px 40px -10px rgba(49, 46, 129, 0.3);
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  justify-content: center;
+  min-height: 220px;
+}
+
+.hero-card__bg {
+  position: absolute;
+  top: 0; right: 0; bottom: 0; left: 0;
+  background-image: radial-gradient(circle at 80% 20%, rgba(255,255,255,0.1) 0%, transparent 40%),
+                    radial-gradient(circle at 10% 80%, rgba(99, 102, 241, 0.4) 0%, transparent 50%);
+  pointer-events: none;
+}
+
+.hero-card__content {
+  position: relative;
+  z-index: 2;
+  max-width: 600px;
+}
+
+.hero-title {
+  font-size: clamp(1.8rem, 3.5vw, 2.8rem);
+  font-weight: 800;
+  line-height: 1.1;
+  margin-bottom: 12px;
+  letter-spacing: -0.02em;
+}
+
+.hero-subtitle {
+  font-size: 1.05rem;
+  color: rgba(255,255,255,0.8);
+  margin-bottom: 20px;
+  line-height: 1.5;
+}
+
+.hero-btn {
+  background: white;
+  color: #312e81;
+  font-weight: 700;
+  padding: 10px 24px;
+  border-radius: 99px;
+  text-decoration: none;
+  transition: transform 0.2s, box-shadow 0.2s;
+  display: inline-block;
+  font-size: 0.95rem;
+}
+
+.hero-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 10px 20px rgba(0,0,0,0.2);
+  color: #312e81;
+  text-decoration: none;
+}
+
+/* Feature Cards (Mini-tiles) */
+.features-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 16px;
+  margin-bottom: 32px;
+}
+
+.feature-card {
+  background: #fff;
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  padding: 16px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  transition: all 0.2s ease;
+  text-decoration: none;
+  color: var(--ink);
+  box-shadow: var(--shadow);
+}
+
+.feature-card:hover {
+  transform: translateY(-2px);
+  border-color: var(--primary);
+  box-shadow: 0 8px 16px rgba(54, 92, 255, 0.15);
+  text-decoration: none;
+}
+
+.feature-icon {
+  width: 40px; height: 40px;
+  border-radius: 10px;
+  background: var(--accent);
+  color: var(--primary);
+  display: grid; display: flex; align-items: center; justify-content: center;
+  font-size: 1.25rem;
+}
+
+.feature-info { display: flex; flex-direction: column; }
+.feature-title { font-weight: 700; font-size: 0.95rem; line-height: 1.2; }
+.feature-desc { font-size: 0.8rem; color: var(--muted); margin-top: 2px; }
+
+.section__title { margin: 0 0 12px; font-size: 1.5rem; display: flex; align-items: center; gap: 8px;}
+

@@ -6,6 +6,7 @@ import { UsersService } from './users.service';
 import { FilesService } from '../files/files.service';
 import { AuthGuard } from '../auth/auth.guard';
 import { FavoritesService } from '../favorites/favorites.service';
+import { UserBooksService } from '../user-books/user-books.service';
 
 @Controller('users')
 export class UsersController {
@@ -13,6 +14,7 @@ export class UsersController {
     private readonly usersService: UsersService,
     private readonly filesService: FilesService,
     private readonly favoritesService: FavoritesService,
+    private readonly userBooksService: UserBooksService,
   ) {}
 
   @Post(':id/avatar')
@@ -94,6 +96,15 @@ export class UsersController {
     return { users };
   }
 
+  @Get('me')
+  async me(@Req() req: Request, @Res() res: Response) {
+      const user = (req as any).user;
+      if (!user) {
+          return res.redirect('/login');
+      }
+      return res.redirect(`/users/${user.id}`);
+  }
+
   @Get(':id')
   @Render('users/profile')
   async findOne(@Param('id') id: string, @Req() req: Request) {
@@ -121,7 +132,25 @@ export class UsersController {
         }
     }
 
-    return { user, isOwner, isSubscribed };
+    const userBooksState = await this.userBooksService.findAllByUser(+id);
+    (user as any).reading = userBooksState.filter(ub => ub.status === 'reading').map(ub => ub.book);
+    (user as any).planned = userBooksState.filter(ub => ub.status === 'planned').map(ub => ub.book);
+    (user as any).readBooks = userBooksState.filter(ub => ub.status === 'read').map(ub => ub.book);
+
+    let recommendations: any[] = [];
+    if (user.friends && user.friends.length > 0) {
+        const friendsIds = new Set(user.friends.map(f => f.id));
+        const allActivity = await this.userBooksService.findLatestReading();
+        
+        recommendations = allActivity
+            .filter(ub => friendsIds.has(ub.user.id))
+            .map(ub => ({
+                ...ub.book,
+                recommender: ub.user
+            }));
+    }
+
+    return { user, isOwner, isSubscribed, recommendations };
   }
 
   @Patch(':id')

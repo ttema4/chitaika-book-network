@@ -7,7 +7,9 @@ import { Book } from './books/entities/book.entity';
 import { Comment } from './comments/entities/comment.entity';
 import { Favorite } from './favorites/entities/favorite.entity';
 import { Rating } from './ratings/entities/rating.entity';
+import { UserBook } from './user-books/entities/user-book.entity';
 import { InitialSchema1000000000000 } from './migrations/1000000000000-InitialSchema';
+import { CreateUserBooks1000000000001 } from './migrations/1000000000001-CreateUserBooks';
 
 @Injectable()
 export class TypeOrmConfigService implements TypeOrmOptionsFactory {
@@ -28,11 +30,12 @@ export class TypeOrmConfigService implements TypeOrmOptionsFactory {
       username: config.user!,
       password: config.password!,
       database: config.database!,
-      entities: [User, Book, Comment, Favorite, Rating], 
+      entities: [User, Book, Comment, Favorite, Rating, UserBook], 
       synchronize: false,
       migrationsRun: true, 
       migrations: [
-        InitialSchema1000000000000
+        InitialSchema1000000000000,
+        CreateUserBooks1000000000001
       ],
       logging: true,
     };
