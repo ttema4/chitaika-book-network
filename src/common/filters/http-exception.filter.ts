@@ -1,9 +1,11 @@
-import { ExceptionFilter, Catch, ArgumentsHost, HttpException, HttpStatus } from '@nestjs/common';
+import { ExceptionFilter, Catch, ArgumentsHost, HttpException, HttpStatus, Logger } from '@nestjs/common';
 import type { Request, Response } from 'express';
 import { QueryFailedError, EntityNotFoundError } from 'typeorm';
 
 @Catch()
 export class AllExceptionsFilter implements ExceptionFilter {
+  private readonly logger = new Logger(AllExceptionsFilter.name);
+
   catch(exception: unknown, host: ArgumentsHost) {
     if (host.getType() as string === 'graphql') {
         return exception;
@@ -33,6 +35,12 @@ export class AllExceptionsFilter implements ExceptionFilter {
     } else if (exception instanceof Error) {
         message = exception.message;
     }
+    
+    if (typeof status !== 'number' || isNaN(status)) {
+        status = HttpStatus.INTERNAL_SERVER_ERROR;
+    }
+
+    this.logger.error(`Exception caught: ${JSON.stringify(message)}, Status: ${status}, Path: ${request.url}`);
 
     if (request.url.startsWith('/api') || request.headers.accept?.includes('application/json')) {
         response
@@ -44,10 +52,16 @@ export class AllExceptionsFilter implements ExceptionFilter {
             message,
           });
     } else {
+        const errorMsg = typeof message === 'string' 
+            ? message 
+            : (typeof message === 'object' && message !== null && 'message' in message 
+                ? (message as any).message 
+                : JSON.stringify(message));
+
         response
             .status(status)
             .render('error', { 
-                message: typeof message === 'string' ? message : JSON.stringify(message),
+                message: errorMsg,
                 statusCode: status 
             });
     }

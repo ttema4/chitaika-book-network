@@ -1,15 +1,16 @@
 import { 
     Controller, Get, Post, Body, Param, Delete, 
-    ValidationPipe, NotFoundException, 
-    ParseIntPipe, Res, Query, DefaultValuePipe, UseInterceptors 
+    ValidationPipe, BadRequestException, 
+    ParseIntPipe, Res, Query, DefaultValuePipe, UseInterceptors, UseGuards 
 } from '@nestjs/common';
 import { CacheInterceptor } from '@nestjs/cache-manager';
 import { CacheControl } from '../common/decorators/cache-control.decorator';
 import { UserBooksService } from './user-books.service';
 import { CreateUserBookDto } from './dto/create-user-book.dto';
 import { UserBookResponseDto } from './dto/user-book-response.dto';
-import { ApiTags, ApiOperation, ApiResponse, ApiHeader, ApiBody } from '@nestjs/swagger';
+import { ApiTags, ApiOperation, ApiResponse, ApiHeader, ApiBody, ApiCookieAuth } from '@nestjs/swagger';
 import type { Response } from 'express';
+import { AuthGuard } from '../auth/auth.guard';
 
 @ApiTags('user-books')
 @Controller('api/user-books')
@@ -17,6 +18,8 @@ export class UserBooksApiController {
   constructor(private readonly userBooksService: UserBooksService) {}
 
   @Post()
+  @UseGuards(AuthGuard)
+  @ApiCookieAuth()
   @ApiOperation({ summary: 'Update or create user book status' })
   @ApiResponse({ status: 201, description: 'User book status updated.', type: UserBookResponseDto })
   @ApiResponse({ status: 400, description: 'Bad Request.' })
@@ -37,9 +40,12 @@ export class UserBooksApiController {
   @ApiResponse({ status: 200, description: 'Return all user books.', type: [UserBookResponseDto] })
   async findAll(
     @Res({ passthrough: true }) res: Response,
-    @Query('page', new DefaultValuePipe(1), ParseIntPipe) page: number,
-    @Query('limit', new DefaultValuePipe(10), ParseIntPipe) limit: number,
+    @Query('page', new DefaultValuePipe(1), ParseIntPipe) page: any,
+    @Query('limit', new DefaultValuePipe(10), ParseIntPipe) limit: any,
   ) {
+    if (page < 1 || limit < 1 || page > Number.MAX_SAFE_INTEGER || limit > Number.MAX_SAFE_INTEGER) {
+       throw new BadRequestException('Validation failed (page and limit must be positive integers)');
+    }
     const skip = (page - 1) * limit;
     const [userBooks, total] = await this.userBooksService.findAllWithPagination(skip, limit);
     

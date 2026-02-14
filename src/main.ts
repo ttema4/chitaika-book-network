@@ -30,7 +30,7 @@ async function bootstrap() {
   });
 
   app.useGlobalPipes(new ValidationPipe({ transform: true }));
-  app.useGlobalFilters(new AllExceptionsFilter(), new SupertokensExceptionFilter());
+  app.useGlobalFilters(new SupertokensExceptionFilter(), new AllExceptionsFilter());
   
   const reflector = app.get(Reflector);
   app.useGlobalInterceptors(

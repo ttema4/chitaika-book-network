@@ -1,6 +1,6 @@
 import { 
     Controller, Get, Post, Body, Patch, Param, Delete, 
-    ValidationPipe, NotFoundException, 
+    ValidationPipe, NotFoundException, BadRequestException, 
     ParseIntPipe, Res, Query, DefaultValuePipe, UseInterceptors, UseGuards 
 } from '@nestjs/common';
 import { CacheInterceptor } from '@nestjs/cache-manager';
@@ -35,9 +35,12 @@ export class CommentsApiController {
   @ApiResponse({ status: 200, description: 'Return all comments.', type: [CommentResponseDto] })
   async findAll(
     @Res({ passthrough: true }) res: Response,
-    @Query('page', new DefaultValuePipe(1), ParseIntPipe) page: number,
-    @Query('limit', new DefaultValuePipe(10), ParseIntPipe) limit: number,
+    @Query('page', new DefaultValuePipe(1), ParseIntPipe) page: any,
+    @Query('limit', new DefaultValuePipe(10), ParseIntPipe) limit: any,
   ) {
+    if (page < 1 || limit < 1 || page > Number.MAX_SAFE_INTEGER || limit > Number.MAX_SAFE_INTEGER) {
+       throw new BadRequestException('Validation failed (page and limit must be positive integers)');
+    }
     const skip = (page - 1) * limit;
     const [comments, total] = await this.commentsService.findAllWithPagination(skip, limit);
     

@@ -1,7 +1,7 @@
 import { 
     Controller, Get, Post, Body, Param, Delete, 
-    ValidationPipe, NotFoundException, ConflictException,
-    ParseIntPipe, Res, Query, DefaultValuePipe, HttpCode, HttpStatus, UseInterceptors, UseGuards 
+    ValidationPipe, BadRequestException,
+    ParseIntPipe, Res, Query, DefaultValuePipe, UseInterceptors, UseGuards 
 } from '@nestjs/common';
 import { CacheInterceptor } from '@nestjs/cache-manager';
 import { CacheControl } from '../common/decorators/cache-control.decorator';
@@ -36,9 +36,12 @@ export class FavoritesApiController {
   @ApiResponse({ status: 200, description: 'Return all favorites.', type: [FavoriteResponseDto] })
   async findAll(
     @Res({ passthrough: true }) res: Response,
-    @Query('page', new DefaultValuePipe(1), ParseIntPipe) page: number,
-    @Query('limit', new DefaultValuePipe(10), ParseIntPipe) limit: number,
+    @Query('page', new DefaultValuePipe(1), ParseIntPipe) page: any,
+    @Query('limit', new DefaultValuePipe(10), ParseIntPipe) limit: any,
   ) {
+    if (page < 1 || limit < 1 || page > Number.MAX_SAFE_INTEGER || limit > Number.MAX_SAFE_INTEGER) {
+       throw new BadRequestException('Validation failed (page and limit must be positive integers)');
+    }
     const skip = (page - 1) * limit;
     const [favorites, total] = await this.favoritesService.findAllWithPagination(skip, limit);
     

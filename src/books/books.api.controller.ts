@@ -1,7 +1,7 @@
 import { 
     Controller, Get, Post, Body, Patch, Param, Delete, 
-    UsePipes, ValidationPipe, NotFoundException, 
-    ParseIntPipe, Header, Headers, Res, UseInterceptors, Query, DefaultValuePipe, UseGuards 
+    ValidationPipe, NotFoundException, BadRequestException, 
+    ParseIntPipe, Res, UseInterceptors, Query, DefaultValuePipe, UseGuards 
 } from '@nestjs/common';
 import { CacheInterceptor } from '@nestjs/cache-manager';
 import { BooksService } from './books.service';
@@ -37,9 +37,12 @@ export class BooksApiController {
   @ApiResponse({ status: 200, description: 'Return all books.', type: [BookResponseDto] })
   async findAll(
     @Res({ passthrough: true }) res: Response,
-    @Query('page', new DefaultValuePipe(1), ParseIntPipe) page: number,
-    @Query('limit', new DefaultValuePipe(10), ParseIntPipe) limit: number,
+    @Query('page', new DefaultValuePipe(1), ParseIntPipe) page: any,
+    @Query('limit', new DefaultValuePipe(10), ParseIntPipe) limit: any,
   ) {
+    if (page < 1 || limit < 1 || page > Number.MAX_SAFE_INTEGER || limit > Number.MAX_SAFE_INTEGER) {
+       throw new BadRequestException('Validation failed (page and limit must be positive integers)');
+    }
     const skip = (page - 1) * limit;
     const [books, total] = await this.booksService.findAll(skip, limit);
     

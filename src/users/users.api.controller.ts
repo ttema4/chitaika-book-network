@@ -1,7 +1,7 @@
 import { 
     Controller, Get, Post, Body, Patch, Param, Delete, 
-    UsePipes, ValidationPipe, NotFoundException, 
-    ParseIntPipe, Header, Headers, Res, Query, DefaultValuePipe, UseInterceptors 
+    ValidationPipe, NotFoundException, BadRequestException, 
+    ParseIntPipe, Res, Query, DefaultValuePipe, UseInterceptors, UseGuards 
 } from '@nestjs/common';
 import { CacheInterceptor } from '@nestjs/cache-manager';
 import { CacheControl } from '../common/decorators/cache-control.decorator';
@@ -9,8 +9,9 @@ import { UsersService } from './users.service';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { UserResponseDto } from './dto/user-response.dto';
-import { ApiTags, ApiOperation, ApiResponse, ApiHeader, ApiBody } from '@nestjs/swagger';
+import { ApiTags, ApiOperation, ApiResponse, ApiHeader, ApiBody, ApiCookieAuth } from '@nestjs/swagger';
 import type { Response } from 'express';
+import { AuthGuard } from '../auth/auth.guard';
 
 @ApiTags('users')
 @Controller('api/users')
@@ -18,6 +19,8 @@ export class UsersApiController {
   constructor(private readonly usersService: UsersService) {}
 
   @Post()
+  @UseGuards(AuthGuard)
+  @ApiCookieAuth()
   @ApiOperation({ summary: 'Create a new user' })
   @ApiResponse({ status: 201, description: 'The user has been successfully created.', type: UserResponseDto })
   @ApiResponse({ status: 400, description: 'Bad Request.' })
@@ -34,9 +37,12 @@ export class UsersApiController {
   @ApiResponse({ status: 200, description: 'Return all users.', type: [UserResponseDto] })
   async findAll(
     @Res({ passthrough: true }) res: Response,
-    @Query('page', new DefaultValuePipe(1), ParseIntPipe) page: number,
-    @Query('limit', new DefaultValuePipe(10), ParseIntPipe) limit: number,
+    @Query('page', new DefaultValuePipe(1), ParseIntPipe) page: any,
+    @Query('limit', new DefaultValuePipe(10), ParseIntPipe) limit: any,
   ) {
+    if (page < 1 || limit < 1 || page > Number.MAX_SAFE_INTEGER || limit > Number.MAX_SAFE_INTEGER) {
+       throw new BadRequestException('Validation failed (page and limit must be positive integers)');
+    }
     const skip = (page - 1) * limit;
     const [users, total] = await this.usersService.findAllWithPagination(skip, limit);
     
@@ -75,6 +81,8 @@ export class UsersApiController {
   }
 
   @Patch(':id')
+  @UseGuards(AuthGuard)
+  @ApiCookieAuth()
   @ApiOperation({ summary: 'Update a user' })
   @ApiResponse({ status: 200, description: 'The user has been successfully updated.', type: UserResponseDto })
   @ApiResponse({ status: 404, description: 'User not found.' })
@@ -83,6 +91,8 @@ export class UsersApiController {
   }
 
   @Delete(':id')
+  @UseGuards(AuthGuard)
+  @ApiCookieAuth()
   @ApiOperation({ summary: 'Delete a user' })
   @ApiResponse({ status: 200, description: 'The user has been successfully deleted.' })
   @ApiResponse({ status: 404, description: 'User not found.' })
