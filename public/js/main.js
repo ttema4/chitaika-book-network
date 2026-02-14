@@ -172,4 +172,28 @@ document.addEventListener('DOMContentLoaded', () => {
             if (isCollapsed) section.classList.add('is-collapsed');
         }
     });
+    const checkNotifications = async () => {
+        try {
+            const res = await fetch('/users/me/notifications');
+            if (res.ok) {
+                const data = await res.json();
+                if (data.notifications && data.notifications.length > 0) {
+                    data.notifications.forEach(msg => {
+                        Toastify({
+                            text: msg,
+                            duration: 5000,
+                            close: true,
+                            gravity: "top", 
+                            position: "right", 
+                            style: { background: "linear-gradient(to right, #3b82f6, #2563eb)" },
+                        }).showToast();
+                    });
+                    await fetch('/users/me/notifications', { method: 'DELETE' });
+                }
+            }
+        } catch (e) {
+        }
+    };
+    
+    checkNotifications();
 });

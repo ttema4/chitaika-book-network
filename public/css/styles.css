@@ -1283,6 +1283,92 @@ form.card {
   transition: box-shadow 0.3s ease; 
 }
 
+@media (max-width: 768px) {
+  .profile-stats {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    width: 100%;
+    margin-top: 1rem;
+    padding: 0.5rem 0;
+    gap: 0;
+    overflow: hidden;
+    scroll-padding-bottom: 0px;
+    position: relative;
+    border: 1px solid rgba(0,0,0,0.04);
+  }
+  
+  .profile-stats .stat-divider {
+    display: none;
+  }
+  
+  .profile-stats .stat-item {
+    min-width: 0;
+    padding: 10px 4px;
+    width: 100%;
+    position: relative;
+    border: none;
+  }
+  
+  .profile-stats .stat-item::after { display: none; }
+  .profile-stats .stat-item::before { display: none; }
+
+  .profile-stats::before {
+      content: '';
+      position: absolute;
+      top: 50%;
+      left: 5%;
+      width: 90%;
+      height: 1px;
+      background-color: #e5e7eb;
+      z-index: 1;
+      pointer-events: none;
+      transform: translateY(-50%);
+  }
+
+  .profile-stats::after {
+      content: '';
+      position: absolute;
+      top: 15%;
+      bottom: 15%;
+      left: 0;
+      width: 100%;
+      background-image: 
+        linear-gradient(
+            to right, 
+            transparent 33.3%, 
+            #e5e7eb 33.3%, 
+            #e5e7eb calc(33.3% + 1px), 
+            transparent calc(33.3% + 1px),
+            
+            transparent 66.6%, 
+            #e5e7eb 66.6%, 
+            #e5e7eb calc(66.6% + 1px), 
+            transparent calc(66.6% + 1px)
+        ),
+        linear-gradient(
+            to right, 
+            transparent 33.3%, 
+            #e5e7eb 33.3%, 
+            #e5e7eb calc(33.3% + 1px), 
+            transparent calc(33.3% + 1px),
+            
+            transparent 66.6%, 
+            #e5e7eb 66.6%, 
+            #e5e7eb calc(66.6% + 1px), 
+            transparent calc(66.6% + 1px)
+        );
+      background-position: top, bottom;
+      background-size: 100% 40%;
+      background-repeat: no-repeat;
+      z-index: 1;
+      pointer-events: none;
+  }
+}
+
+.stat-item.friends .stat-value {
+    color: var(--gray-500);
+}
+
 .profile-stats:hover {
   box-shadow: 0 4px 12px rgba(0,0,0,0.03);
 }
@@ -1352,20 +1438,68 @@ form.card {
 }
 
 .book-detail-container {
-  max-width: 960px; /* Slight increase for wider cover */
-  margin: 0 auto;
+  width: 100%;
   display: flex;
-  gap: 2rem;
+  gap: 3rem; 
   flex-wrap: wrap;
-  align-items: stretch; /* Both columns equal height */
+  background: var(--paper);
+  border-radius: 20px;
+  padding: 24px;
+  box-shadow: 0 4px 24px rgba(0,0,0,0.04);
+  border: 1px solid rgba(0,0,0,0.03);
+  margin-bottom: 40px;
+  margin-top: 32px;
 }
 .book-detail-cover {
-  flex: 0 0 350px; /* Wider cover column */
-  width: 100%;
-  max-width: 350px;
+  flex: 0 0 340px; 
+  width: 340px;
+  max-width: 340px;
   display: flex;
   flex-direction: column;
-  gap: 1.5rem; /* Restored gap for separation */
+  gap: 1.5rem;
+}
+.book-detail-info {
+  flex: 1;
+  min-width: 300px;
+  display: flex;
+  flex-direction: column;
+  padding-top: 10px;
+  min-height: 520px;
+}
+.book-actions {
+    margin-top: auto;
+    width: 100%;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding-top: 2rem;
+}
+
+.book-detail-cover .profile-stats {
+    width: 100%;
+    margin-top: 0;
+    padding: 12px;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+    min-width: 0;
+    background: transparent;
+    border: none !important;
+}
+.book-detail-cover .profile-stats::before,
+.book-detail-cover .profile-stats::after {
+    display: none !important;
+}
+.book-detail-cover .profile-stats .stat-item {
+    min-width: 0;
+    padding: 8px 4px;
+    width: auto;
+}
+.book-detail-cover .profile-stats .stat-value svg {
+    width: 20px; height: 20px;
+}
+.book-detail-cover .profile-stats .stat-label {
+    font-size: 0.65rem;
 }
 .book-detail-figure {
   margin: 0;
@@ -1378,7 +1512,7 @@ form.card {
   transition: transform 0.3s ease;
 }
 .book-detail-figure:hover {
-    transform: scale(1.02); /* Subtle interaction hint */
+    transform: scale(1.02);
 }
 .book-detail-img {
   width: 100%;
@@ -1400,7 +1534,7 @@ form.card {
   line-height: 1.1;
   letter-spacing: -0.02em;
   margin-top: -0.25rem;
-  padding-right: 120px; /* Space for absolute positioned genre pill */
+  padding-right: 120px;
 }
 .book-detail-author {
   font-size: 1.1rem;
@@ -1411,14 +1545,12 @@ form.card {
   display: inline-block;
   background: #f3f4f6;
   padding: 6px 16px;
-  border-radius: 99px; /* Oval pill shape */
+  border-radius: 99px;
   font-size: 0.85rem;
   font-weight: 600;
   color: #4b5563;
   border: 1px solid transparent; 
   text-decoration: none;
-  
-  /* Absolute position top-right */
   position: absolute;
   top: 0;
   right: 0;
@@ -1446,7 +1578,7 @@ form.card {
   flex-direction: column;
   gap: 12px;
   width: 100%;
-  margin-top: auto; /* Push to bottom to align with left column bottom */
+  margin-top: auto;
 }
 .book-action-read {
   width: 100%;
@@ -1455,7 +1587,6 @@ form.card {
   font-size: 1.05rem;
   font-weight: 600;
   border-radius: 12px;
-  /* Reverting to standard .btn-primary style for consistency */
   letter-spacing: 0.01em;
   text-align: center;
   margin-bottom: 0; 
@@ -1463,7 +1594,6 @@ form.card {
 }
 .book-action-read:hover {
   transform: translateY(-2px);
-  /* Hover effects handled by .btn-primary */
 }
 .book-action-row {
   display: flex;
@@ -1521,10 +1651,9 @@ form.card {
   width: 100%;
 }
 
-/* New Status Widget (Profile Style) */
 .status-widget {
   max-width: 100%;
-  margin-top: auto; /* Aligned to bottom to match buttons */
+  margin-top: auto;
   margin-bottom: 0;
   display: flex !important;
   justify-content: space-between; 
@@ -1535,11 +1664,26 @@ form.card {
   border: none;
   box-shadow: none !important; 
 }
-.status-widget:hover {
-  box-shadow: none !important;
+
+@media (max-width: 850px) {
+  .book-detail-container {
+      justify-content: center;
+  }
+  .book-detail-cover {
+      margin: 0 auto;
+  }
+  .book-detail-cover .profile-stats {
+      justify-content: center;
+  }
 }
 
-/* Restoring Colors for Interaction */
+.header__user {
+    transition: opacity 0.2s;
+}
+.header__user:hover {
+    opacity: 0.8;
+}
+
 .status-widget .stat-item {
   cursor: pointer;
   opacity: 1; 
@@ -1565,15 +1709,13 @@ form.card {
     transition: color 0.2s;
 }
 
-/* Explicitly disable box-shadow on hover for container */
 .status-widget .stat-item:hover {
   transform: translateY(-2px);
-  background: transparent; /* Transparent hover background to look cleaner "less dirty" */
+  background: transparent;
   text-decoration: none;
   box-shadow: none !important; 
 }
 
-/* Active State Styles - Restoring Colors */
 .status-option[data-status="planned"].is-active, 
 .status-option[data-status="planned"]:hover {
   color: #2563eb !important;
@@ -1606,16 +1748,12 @@ form.card {
   color: #4b5563 !important;
 }
 
-/* Background for Active items mostly white/subtle */
 .status-option.is-active {
     background: #fff;
     border-color: #e5e7eb;
     box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1); 
 }
 
-
-
-/* Collapsible Sections */
 .collapsible-header {
   cursor: pointer;
   user-select: none;
@@ -1646,7 +1784,7 @@ form.card {
 .collapsible-content {
   transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
   overflow: hidden;
-  max-height: 2000px; /* Arbitrary large height */
+  max-height: 2000px;
   opacity: 1;
 }
 
@@ -1657,7 +1795,6 @@ form.card {
   padding: 0;
 }
 
-/* Homepage Hero "Juice" */
 .hero-card {
   background: linear-gradient(135deg, #1e1b4b 0%, #312e81 100%);
   color: white;
@@ -1723,7 +1860,6 @@ form.card {
   text-decoration: none;
 }
 
-/* Feature Cards (Mini-tiles) */
 .features-grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));

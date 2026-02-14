@@ -2,9 +2,12 @@ import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { User } from './entities/user.entity';
+import { Subject } from 'rxjs';
 
 @Injectable()
 export class UsersService {
+  public readonly userSubscribed$ = new Subject<{ toUserId: number, message: string }>();
+
   constructor(
     @InjectRepository(User)
     private usersRepository: Repository<User>,
@@ -22,7 +25,7 @@ export class UsersService {
   async findOne(id: number): Promise<User> {
     const user = await this.usersRepository.findOne({ 
         where: { id },
-        relations: ['favorites', 'favorites.book', 'subscribers'] 
+        relations: ['favorites', 'favorites.book', 'subscribers', 'friends'] 
     });
     if (!user) {
         throw new NotFoundException(`User #${id} not found`);
@@ -64,6 +67,11 @@ export class UsersService {
     if (!user.friends.find(f => f.id === friend.id)) {
         user.friends.push(friend);
         await this.usersRepository.save(user);
+
+        this.userSubscribed$.next({ 
+            toUserId: friend.id, 
+            message: `Пользователь ${user.username} подписался на вас` 
+        });
     }
   }
 

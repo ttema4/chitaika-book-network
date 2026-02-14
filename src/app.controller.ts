@@ -17,7 +17,8 @@ export class AppController {
   @Get()
   @Render('pages/index')
   async root(@Req() req: Request) {
-    let books = await this.booksService.findAll();
+    const [fetchedBooks] = await this.booksService.findAll(0, 100);
+    let books: any[] = fetchedBooks;
     const readingNow = await this.userBooksService.findLatestReading();
     
     // @ts-ignore
@@ -83,12 +84,4 @@ export class AppController {
       friendsReads
     };
   }
-
-  /*
-  @Get('profile')
-  @Render('profile')
-  profile() {
-    return {};
-  }
-  */
 }

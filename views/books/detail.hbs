@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="ru">
 {{> header title=book.title metaTitle=book.title}}
-    <section class="section">
+    <main class="main">
       <div class="book-detail-container">
         
         <div class="book-detail-cover">
@@ -17,6 +17,7 @@
             {{/if}}
             </figure>
 
+            {{#if user}}
             <div class="profile-stats status-widget" data-book-id="{{book.id}}" data-current-status="{{book.userBookStatus}}">
                 <div class="stat-item status-option" data-status="none" title="Не читал">
                     <div class="stat-value">
@@ -46,6 +47,15 @@
                     <div class="stat-label">Прочитал</div>
                 </div>
             </div>
+            {{else}}
+            <div class="auth-message-detail" style="margin-top: 10px; text-align: center; background: #f9fafb; border: 1px solid #e5e7eb; border-radius: 12px; padding: 16px;">
+                 <div style="font-weight: 500; color: #374151; margin-bottom: 4px;">Статус чтения</div>
+                 <div style="color: #6b7280; font-size: 0.9em;">
+                    <a href="/login" class="nav__link" style="display:inline-block; padding: 4px 12px; background: var(--ink); color: #fff; margin: 0 4px; font-size: 0.8em;">Войдите</a>
+                    чтобы отмечать прочитанное
+                 </div>
+            </div>
+            {{/if}}
         </div>
 
         
@@ -66,7 +76,7 @@
             {{/if}}
 
             <div class="book-actions">
-                <a class="btn btn-primary book-action-read" href="{{book.text_url}}" target="_blank">Читать / Скачать текст</a>
+                <a class="btn btn-primary book-action-read" href="/books/{{book.id}}/read">Читать книгу</a>
                 
                 <div class="btn-group book-action-row">
                     <a href="/books/{{book.id}}/edit" class="btn btn-secondary btn-sm book-action-edit">Редактировать</a>
@@ -78,6 +88,6 @@
             </div>
         </div>
       </div>
-    </section>
+    </main>
 {{> footer}}
 </html>

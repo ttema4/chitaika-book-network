@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Читаем: {{book.title}}</title>
+    <link rel="stylesheet" href="/css/styles.css">
+    <link rel="stylesheet" href="/css/reader.css">
+</head>
+<body class="reader-mode">
+    <div class="reader-header">
+        <div class="header__bar">
+             <a href="/books/{{book.id}}" class="btn-ghost" style="padding: 6px 12px; font-size: 14px;">← Назад</a>
+        </div>
+       
+        <div class="header__title" style="font-size: 1rem; margin:0; font-weight: 600; color: var(--gray-800);">{{book.title}}</div>
+        
+        <div class="controls">
+            <button class="btn-icon" onclick="toggleTheme()" title="Тема">🌗</button>
+            <button class="btn-icon" onclick="changeFontSize(1)" title="Увеличить шрифт">A+</button>
+            <button class="btn-icon" onclick="changeFontSize(-1)" title="Уменьшить шрифт">A-</button>
+            <button class="btn-icon" onclick="toggleSidebar()" title="Комментарии">💬</button>
+        </div>
+    </div>
+
+    <div class="reader-body">
+        <div class="reader-container">
+            {{#if error}}
+                <div style="color:red; text-align:center; margin-top:50px;">
+                    <h2>Ошибка загрузки</h2>
+                    <p>{{error}}</p>
+                </div>
+            {{else}}
+                <div id="reader-content" class="reader-content">Loading...</div>
+                <div id="reader-gutter" class="reader-gutter"></div>
+            {{/if}}
+        </div>
+    </div>
+
+    <div id="selection-btn">Комментировать</div>
+
+    <div id="comment-popup" class="reader-popup">
+    </div>
+    
+    <div id="sidebar-panel" class="reader-sidebar-panel">
+        <div class="sidebar-header">
+            <span>Все комментарии</span>
+            <button class="btn-ghost" onclick="toggleSidebar()" style="padding:4px 8px;">✕</button>
+        </div>
+        <div id="sidebar-list" class="sidebar-content"></div>
+    </div>
+
+    <textarea id="raw-content" style="display:none;">{{content}}</textarea>
+    <script>
+        const BOOK_ID = {{book.id}};
+        const CURRENT_USER = {{{userJson}}};
+        const USER_LOGGED_IN = !!CURRENT_USER;
+        
+        console.log('User status:', { USER_LOGGED_IN, CURRENT_USER });
+
+        const COMMENTS_DATA = {{{commentsJson}}};
+    </script>
+    <script src="/js/reader.js"></script>
+</body>
+</html>

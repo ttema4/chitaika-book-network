@@ -1,0 +1,47 @@
+# ------------------------------------------------------
+# THIS FILE WAS AUTOMATICALLY GENERATED (DO NOT MODIFY)
+# ------------------------------------------------------
+
+type Book {
+  id: Int!
+  title: String!
+  author: String!
+  cover_url: String
+  text_url: String!
+  genre: String
+  description: String
+  comments: [Comment!]!
+}
+
+type Comment {
+  id: Int!
+  content: String!
+  start_offset: Int!
+  end_offset: Int!
+  created_at: DateTime!
+  user_id: Int!
+  book_id: Int!
+}
+
+"""
+A date-time string at UTC, such as 2019-12-03T09:54:33Z, compliant with the date-time format.
+"""
+scalar DateTime
+
+type Query {
+  books(skip: Int, take: Int): [Book!]!
+  book(id: Int!): Book
+}
+
+type Mutation {
+  createBook(createBookInput: CreateBookInput!): Book!
+}
+
+input CreateBookInput {
+  title: String!
+  author: String!
+  genre: String
+  description: String
+  cover_url: String
+  text_url: String
+}

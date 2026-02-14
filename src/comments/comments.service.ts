@@ -12,14 +12,15 @@ export class CommentsService {
 
   async create(createCommentDto: any): Promise<Comment> {
     const comment = this.commentsRepository.create(createCommentDto as Partial<Comment>);
-    return await this.commentsRepository.save(comment);
+    const saved = await this.commentsRepository.save(comment);
+    return this.findOne(saved.id);
   }
 
   async findAll(bookId?: number): Promise<Comment[]> {
     if (bookId) {
         return this.commentsRepository.find({ 
             where: { book_id: bookId },
-            relations: ['user'] // To show who commented
+            relations: ['user']
         });
     }
     return this.commentsRepository.find({ relations: ['user', 'book'] });

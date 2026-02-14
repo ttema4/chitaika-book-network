@@ -63,6 +63,13 @@
                           <div class="stat-label">Рецензий</div>
                       </div>
 
+                      <div class="stat-divider"></div>
+
+                      <a href="/users/readers" class="stat-item friends">
+                          <div class="stat-value">{{user.friends.length}}</div>
+                          <div class="stat-label">Подписки</div>
+                      </a>
+
                       {{#unless isOwner}}
                       <div class="stat-divider"></div>
                       {{#if isSubscribed}}

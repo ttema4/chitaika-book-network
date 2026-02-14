@@ -23,9 +23,13 @@
     el.style.opacity = '0.9';
     pageFooter.appendChild(el);
 
+    const serverTimeDiv = document.getElementById('server-time');
+    const serverTime = serverTimeDiv ? serverTimeDiv.textContent : '';
+
     el.innerHTML = `
       Page load time is <strong>${msToSec(loadTime)}</strong> Seconds
       &middot; DOMContentLoaded: <strong>${msToSec(domTime)}</strong> Seconds
+      ${serverTime ? `&middot; Server: <strong>${serverTime}</strong>` : ''}
     `;
   });
 })();

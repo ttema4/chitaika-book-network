@@ -1,4 +1,4 @@
-import { Controller, Get, Render, Post, Body, UseInterceptors, UploadedFiles, Res, Param, Patch, Delete, Sse, MessageEvent, UseGuards, Req } from '@nestjs/common';
+import { Controller, Get, Render, Post, Body, UseInterceptors, UploadedFiles, Res, Param, Patch, Delete, Sse, MessageEvent, UseGuards, Req, Query, DefaultValuePipe, NotFoundException } from '@nestjs/common';
 import { FileFieldsInterceptor } from '@nestjs/platform-express';
 import type { Response, Request } from 'express';
 import { Observable, map } from 'rxjs';
@@ -7,6 +7,7 @@ import { FilesService } from '../files/files.service';
 import { AuthGuard } from '../auth/auth.guard';
 import { FavoritesService } from '../favorites/favorites.service';
 import { UserBooksService } from '../user-books/user-books.service';
+import { CommentsService } from '../comments/comments.service';
 
 @Controller('books')
 export class BooksController {
@@ -15,6 +16,7 @@ export class BooksController {
     private readonly filesService: FilesService,
     private readonly favoritesService: FavoritesService,
     private readonly userBooksService: UserBooksService,
+    private readonly commentsService: CommentsService,
   ) {}
 
   @Sse('events')
@@ -72,7 +74,7 @@ export class BooksController {
     }
 
     if (!textUrl) {
-       // In a real app we might validate before upload
+      throw new Error('Text file is required');
     }
 
     await this.booksService.create({
@@ -90,7 +92,7 @@ export class BooksController {
   @Get()
   @Render('books/list')
   async findAll(@Req() req: Request) {
-    const books = await this.booksService.findAll();
+    const [books] = await this.booksService.findAll(0, 100);
     
     if ((req as any).user) {
         const userFavorites = await this.favoritesService.findAllByUser((req as any).user.id);
@@ -104,6 +106,43 @@ export class BooksController {
     }
 
     return { books };
+  }
+
+  @Get(':id/read')
+  @Render('books/read')
+  async readPage(@Param('id') id: string, @Req() req: Request, @Res({ passthrough: true }) res: Response) {
+    res.header('Cache-Control', 'private, no-cache, no-store, must-revalidate');
+    res.header('Expires', '-1');
+    res.header('Pragma', 'no-cache');
+
+    const book = await this.booksService.findOne(+id);
+    if (!book) {
+         throw new NotFoundException('Book not found');
+    }
+    
+    let content = '';
+    let error = '';
+    
+    if (book.text_url) {
+        try {
+            content = await this.filesService.getFileContent(book.text_url);
+        } catch (e) {
+            error = 'Не удалось загрузить книгу';
+        }
+    } else {
+        error = 'Файл книги отсутствует';
+    }
+    
+    const comments = await this.commentsService.findAll(+id);
+
+    return { 
+        book, 
+        content, 
+        commentsJson: JSON.stringify(comments),
+        userJson: (req as any).user ? JSON.stringify((req as any).user) : 'null',
+        error,
+        user: (req as any).user
+    };
   }
 
   @Get(':id')
@@ -124,7 +163,10 @@ export class BooksController {
          }
     }
 
-    return { book: { ...book, isFavorite, userBookStatus } };
+    return { 
+        book: { ...book, isFavorite, userBookStatus },
+        user: (req as any).user
+    };
   }
 
   @Get(':id/edit')

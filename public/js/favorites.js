@@ -15,7 +15,6 @@ document.addEventListener('DOMContentLoaded', () => {
       }
     }
 
-    // --- FAVORITES LOGIC ---
     document.body.addEventListener('click', async (e) => {
       const btn = e.target.closest('.fav-btn');
       if (!btn) return;
@@ -28,7 +27,6 @@ document.addEventListener('DOMContentLoaded', () => {
       const title = btn.getAttribute('data-book') || 'Книга';
       const bookId = btn.getAttribute('data-book-id');
 
-      // Optimistic UI
       const wasActive = btn.classList.contains('is-active');
       btn.classList.toggle('is-active');
       btn.setAttribute('aria-pressed', !wasActive);
@@ -56,18 +54,15 @@ document.addEventListener('DOMContentLoaded', () => {
           }
       } catch (err) {
           console.error(err);
-          // Revert UI on error
           btn.classList.toggle('is-active');
           showToast('Ошибка сохранения. Попробуйте позже.', 'error');
       }
     });
 
-    // --- FRIENDS LOGIC ---
     document.body.addEventListener('click', async (e) => {
         const btn = e.target.closest('.friend-btn');
         if (!btn) return;
         
-        // Check both 'disabled' property and class
         if (btn.disabled || btn.classList.contains('disabled')) {
              return;
         }
@@ -75,10 +70,9 @@ document.addEventListener('DOMContentLoaded', () => {
         e.preventDefault();
         const userId = btn.getAttribute('data-user-id');
         const username = btn.getAttribute('data-username');
-        const action = btn.dataset.action; // 'add' or 'remove'
+        const action = btn.dataset.action;
         const url = `/users/friends/${userId}${action === 'remove' ? '/remove' : ''}`;
 
-        // Disable button while processing
         btn.disabled = true;
 
         try {
@@ -92,20 +86,16 @@ document.addEventListener('DOMContentLoaded', () => {
              if (response.ok) {
                  if (action === 'add') {
                      showToast(`Вы подписались на ${username}`);
-                     
-                     // If we are on the readers page, reload to update the lists properly
                      if (window.location.pathname === '/users/readers') {
                          setTimeout(() => window.location.reload(), 500);
                          return;
                      }
 
-                     // Update Button UI to 'Remove' state
                      btn.dataset.action = 'remove';
                      btn.textContent = 'Отписаться';
                      btn.classList.remove('btn--primary');
                      btn.classList.add('btn--danger');
                      
-                     // Update badge in avatar box
                      const card = btn.closest('.card');
                      const avatarBox = card.querySelector('.user-card__avatar-box');
                      if (avatarBox) {
@@ -119,20 +109,16 @@ document.addEventListener('DOMContentLoaded', () => {
                      }
                  } else {
                      showToast(`Вы отписались от ${username}`);
-                     
-                     // If we are on the readers page, reload to update the lists properly
                      if (window.location.pathname === '/users/readers') {
                          setTimeout(() => window.location.reload(), 500);
                          return;
                      }
 
-                     // Update Button UI to 'Add' state
                      btn.dataset.action = 'add';
                      btn.textContent = 'Подписаться';
                      btn.classList.remove('btn--danger');
                      btn.classList.add('btn--primary');
                      
-                     // Remove badge
                      const card = btn.closest('.card');
                      const badge = card.querySelector('.user-card__badge');
                      if (badge) badge.remove();

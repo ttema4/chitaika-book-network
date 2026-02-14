@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, Render, UseInterceptors, UploadedFile, Res, Req, UseGuards } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, Render, UseInterceptors, UploadedFile, Res, Req, UseGuards, Sse, MessageEvent } from '@nestjs/common';
 import { User } from './entities/user.entity';
 import { FileInterceptor } from '@nestjs/platform-express';
 import type { Response, Request } from 'express';
@@ -7,6 +7,7 @@ import { FilesService } from '../files/files.service';
 import { AuthGuard } from '../auth/auth.guard';
 import { FavoritesService } from '../favorites/favorites.service';
 import { UserBooksService } from '../user-books/user-books.service';
+import { Observable, filter, map } from 'rxjs';
 
 @Controller('users')
 export class UsersController {
@@ -103,6 +104,15 @@ export class UsersController {
           return res.redirect('/login');
       }
       return res.redirect(`/users/${user.id}`);
+  }
+
+  @Sse('sse')
+  sse(@Req() req: Request): Observable<MessageEvent> {
+      const user = (req as any).user;
+      return this.usersService.userSubscribed$.pipe(
+          filter(event =>  !!user && event.toUserId === user.id),
+          map(event => ({ data: { message: event.message } } as MessageEvent))
+      );
   }
 
   @Get(':id')
