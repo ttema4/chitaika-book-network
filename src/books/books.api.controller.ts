@@ -1,15 +1,17 @@
 import { 
     Controller, Get, Post, Body, Patch, Param, Delete, 
     UsePipes, ValidationPipe, NotFoundException, 
-    ParseIntPipe, Header, Headers, Res, UseInterceptors, Query, DefaultValuePipe 
+    ParseIntPipe, Header, Headers, Res, UseInterceptors, Query, DefaultValuePipe, UseGuards 
 } from '@nestjs/common';
 import { CacheInterceptor } from '@nestjs/cache-manager';
 import { BooksService } from './books.service';
 import { CreateBookDto } from './dto/create-book.dto';
 import { UpdateBookDto } from './dto/update-book.dto';
-import { ApiTags, ApiOperation, ApiResponse, ApiHeader, ApiBody } from '@nestjs/swagger';
+import { BookResponseDto } from './dto/book-response.dto';
+import { ApiTags, ApiOperation, ApiResponse, ApiHeader, ApiBody, ApiCookieAuth } from '@nestjs/swagger';
 import type { Response } from 'express';
 import { CacheControl } from '../common/decorators/cache-control.decorator';
+import { AuthGuard } from '../auth/auth.guard';
 
 @ApiTags('books')
 @Controller('api/books')
@@ -17,8 +19,10 @@ export class BooksApiController {
   constructor(private readonly booksService: BooksService) {}
 
   @Post()
+  @UseGuards(AuthGuard)
+  @ApiCookieAuth()
   @ApiOperation({ summary: 'Create a new book' })
-  @ApiResponse({ status: 201, description: 'The book has been successfully created.' })
+  @ApiResponse({ status: 201, description: 'The book has been successfully created.', type: BookResponseDto })
   @ApiResponse({ status: 400, description: 'Bad Request.' })
   @ApiBody({ type: CreateBookDto })
   async create(@Body(new ValidationPipe()) createBookDto: CreateBookDto) {
@@ -30,7 +34,7 @@ export class BooksApiController {
   @CacheControl('public, max-age=60')
   @ApiOperation({ summary: 'Get all books with pagination' })
   @ApiHeader({ name: 'Link', description: 'Links to next/prev pages' })
-  @ApiResponse({ status: 200, description: 'Return all books.' })
+  @ApiResponse({ status: 200, description: 'Return all books.', type: [BookResponseDto] })
   async findAll(
     @Res({ passthrough: true }) res: Response,
     @Query('page', new DefaultValuePipe(1), ParseIntPipe) page: number,
@@ -61,7 +65,7 @@ export class BooksApiController {
 
   @Get(':id')
   @ApiOperation({ summary: 'Get a book by id' })
-  @ApiResponse({ status: 200, description: 'Return the book.' })
+  @ApiResponse({ status: 200, description: 'Return the book.', type: BookResponseDto })
   @ApiResponse({ status: 404, description: 'Book not found.' })
   async findOne(@Param('id', ParseIntPipe) id: number) {
     const book = await this.booksService.findOne(id);
@@ -72,8 +76,10 @@ export class BooksApiController {
   }
 
   @Patch(':id')
+  @UseGuards(AuthGuard)
+  @ApiCookieAuth()
   @ApiOperation({ summary: 'Update a book' })
-  @ApiResponse({ status: 200, description: 'The book has been successfully updated.' })
+  @ApiResponse({ status: 200, description: 'The book has been successfully updated.', type: BookResponseDto })
   @ApiResponse({ status: 404, description: 'Book not found.' })
   async update(@Param('id', ParseIntPipe) id: number, @Body(new ValidationPipe()) updateBookDto: UpdateBookDto) {
     const book = await this.booksService.findOne(id);
@@ -82,7 +88,8 @@ export class BooksApiController {
     }
     return this.booksService.update(id, updateBookDto);
   }
-
+  @UseGuards(AuthGuard)
+  @ApiCookieAuth()
   @Delete(':id')
   @ApiOperation({ summary: 'Delete a book' })
   @ApiResponse({ status: 200, description: 'The book has been successfully deleted.' })

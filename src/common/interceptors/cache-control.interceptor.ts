@@ -9,6 +9,10 @@ export class CacheControlInterceptor implements NestInterceptor {
   constructor(private reflector: Reflector) {}
 
   intercept(context: ExecutionContext, next: CallHandler): Observable<any> {
+    if ((context.getType() as string) === 'graphql') {
+        return next.handle();
+    }
+
     const ctx = context.switchToHttp();
     const response = ctx.getResponse<Response>();
     

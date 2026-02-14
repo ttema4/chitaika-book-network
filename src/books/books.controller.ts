@@ -1,4 +1,6 @@
 import { Controller, Get, Render, Post, Body, UseInterceptors, UploadedFiles, Res, Param, Patch, Delete, Sse, MessageEvent, UseGuards, Req, Query, DefaultValuePipe, NotFoundException } from '@nestjs/common';
+import { CacheInterceptor } from '@nestjs/cache-manager';
+import { CacheControl } from '../common/decorators/cache-control.decorator';
 import { FileFieldsInterceptor } from '@nestjs/platform-express';
 import type { Response, Request } from 'express';
 import { Observable, map } from 'rxjs';
@@ -8,7 +10,9 @@ import { AuthGuard } from '../auth/auth.guard';
 import { FavoritesService } from '../favorites/favorites.service';
 import { UserBooksService } from '../user-books/user-books.service';
 import { CommentsService } from '../comments/comments.service';
+import { ApiExcludeController } from '@nestjs/swagger';
 
+@ApiExcludeController()
 @Controller('books')
 export class BooksController {
   constructor(
@@ -37,6 +41,8 @@ export class BooksController {
 
   @Get('create')
   @UseGuards(AuthGuard)
+  @UseInterceptors(CacheInterceptor)
+  @CacheControl('private, max-age=3600')
   @Render('books/create')
   createPage() {
     return {};
@@ -90,6 +96,8 @@ export class BooksController {
   }
 
   @Get()
+  @UseInterceptors(CacheInterceptor)
+  @CacheControl('private, max-age=60')
   @Render('books/list')
   async findAll(@Req() req: Request) {
     const [books] = await this.booksService.findAll(0, 100);
@@ -107,8 +115,9 @@ export class BooksController {
 
     return { books };
   }
-
   @Get(':id/read')
+  @UseInterceptors(CacheInterceptor)
+  @CacheControl('private, max-age=3600')
   @Render('books/read')
   async readPage(@Param('id') id: string, @Req() req: Request, @Res({ passthrough: true }) res: Response) {
     res.header('Cache-Control', 'private, no-cache, no-store, must-revalidate');
@@ -172,6 +181,8 @@ export class BooksController {
   @Get(':id/edit')
   @UseGuards(AuthGuard)
   @Render('books/edit')
+  @UseInterceptors(CacheInterceptor)
+  @CacheControl('private, max-age=60')
   async editPage(@Param('id') id: string) {
     const book = await this.booksService.findOne(+id);
     return { book };

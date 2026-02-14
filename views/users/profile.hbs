@@ -70,33 +70,44 @@
                           <div class="stat-label">Подписки</div>
                       </a>
 
-                      {{#unless isOwner}}
-                      <div class="stat-divider"></div>
-                      {{#if isSubscribed}}
-                      <div class="stat-item subscribe-action" data-user-id="{{user.id}}" data-action="unsubscribe" style="cursor: pointer;">
-                          <div class="stat-icon">
-                              <img src="https://storage.yandexcloud.net/book-network/images/cross.png" alt="Unsubscribe" style="width: 20px; height: 20px;">
-                          </div>
-                          <div class="stat-label">Отписаться</div>
-                      </div>
-                      {{else}}
-                      <div class="stat-item subscribe-action" data-user-id="{{user.id}}" data-action="subscribe" style="cursor: pointer;">
-                          <div class="stat-icon">
-                              <img src="https://storage.yandexcloud.net/book-network/images/plus.png" alt="Subscribe" style="width: 20px; height: 20px;">
-                          </div>
-                          <div class="stat-label">Подписаться</div>
-                      </div>
-                      {{/if}}
-                      {{/unless}}
-                      
-                      {{#if isOwner}}
-                      <div class="stat-divider"></div>
-                      <a href="/logout" class="stat-item logout" title="Выйти из аккаунта">
-                          <div class="stat-icon">
-                              <img src="https://storage.yandexcloud.net/book-network/images/logout.png" alt="Logout" style="width: 20px; height: 20px;">
-                          </div>
-                          <div class="stat-label">Выйти</div>
-                      </a>
+                        {{#if isAuthenticated}}
+                            {{#unless isOwner}}
+                                <div class="stat-divider"></div>
+                                {{#if isSubscribed}}
+                                <div class="stat-item subscribe-action" data-user-id="{{user.id}}" data-action="unsubscribe" style="cursor: pointer;">
+                                    <div class="stat-icon">
+                                        <img src="https://storage.yandexcloud.net/book-network/images/cross.png" alt="Unsubscribe" style="width: 20px; height: 20px;">
+                                    </div>
+                                    <div class="stat-label">Отписаться</div>
+                                </div>
+                                {{else}}
+                                <div class="stat-item subscribe-action" data-user-id="{{user.id}}" data-action="subscribe" style="cursor: pointer;">
+                                    <div class="stat-icon">
+                                        <img src="https://storage.yandexcloud.net/book-network/images/plus.png" alt="Subscribe" style="width: 20px; height: 20px;">
+                                    </div>
+                                    <div class="stat-label">Подписаться</div>
+                                </div>
+                                {{/if}}
+                            {{/unless}}
+
+                            {{else}}
+                            <div class="stat-divider"></div>
+                            <div class="stat-item" title="Войдите, чтобы подписаться" style="opacity: 0.5; cursor: not-allowed;">
+                                <div class="stat-icon">
+                                    <img src="https://storage.yandexcloud.net/book-network/images/plus.png" alt="Subscribe" style="width: 20px; height: 20px; filter: grayscale(1);">
+                                </div>
+                                <div class="stat-label">Подписаться</div>
+                            </div>
+                            {{/if}}
+                            
+                            {{#if isOwner}}
+                            <div class="stat-divider"></div>
+                            <a href="/logout" class="stat-item logout" title="Выйти из аккаунта">
+                                <div class="stat-icon">
+                                    <img src="https://storage.yandexcloud.net/book-network/images/logout.png" alt="Logout" style="width: 20px; height: 20px;">
+                                </div>
+                                <div class="stat-label">Выйти</div>
+                            </a>
                       {{/if}}
                   </div>
               </div>

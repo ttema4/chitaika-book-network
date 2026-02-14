@@ -7,6 +7,10 @@ import etag from 'etag';
 @Injectable()
 export class EtagInterceptor implements NestInterceptor {
   intercept(context: ExecutionContext, next: CallHandler): Observable<any> {
+    if ((context.getType() as string) === 'graphql') {
+        return next.handle();
+    }
+
     const ctx = context.switchToHttp();
     const req = ctx.getRequest<Request>();
     const res = ctx.getResponse<Response>();

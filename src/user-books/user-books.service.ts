@@ -16,11 +16,35 @@ export class UserBooksService {
     private readonly bookRepository: Repository<Book>,
   ) {}
 
+  async findById(id: number): Promise<UserBook | null> {
+    return this.userBookRepository.findOne({
+      where: { id },
+      relations: ['user', 'book']
+    });
+  }
+
   async findOne(userId: number, bookId: number): Promise<UserBook | null> {
     return this.userBookRepository.findOne({
       where: { userId, bookId },
+      relations: ['user', 'book']
     });
   }
+
+  async findAllByBook(bookId: number): Promise<UserBook[]> {
+      return this.userBookRepository.find({
+          where: { bookId },
+          relations: ['user']
+      });
+  }
+
+  async create(createInput: any): Promise<UserBook> {
+      return this.updateStatus(createInput.userId, createInput.bookId, createInput.status);
+  }
+
+  async remove(id: number): Promise<void> {
+      await this.userBookRepository.delete(id);
+  }
+
 
   async updateStatus(userId: number, bookId: number, status: UserBookStatus): Promise<UserBook> {
     let userBook = await this.userBookRepository.findOne({
@@ -39,11 +63,7 @@ export class UserBooksService {
 
     const saved = await this.userBookRepository.save(userBook);
     
-    // Update user's booksReadCount if status is READ
     if (status === UserBookStatus.READ) {
-       // logic to increment count? Or just count dynamically
-       // The user entity has a count column. We might want to update it.
-       // But efficient way is just count distinct books with status READ.
        const count = await this.userBookRepository.count({ where: { userId, status: UserBookStatus.READ } });
        await this.userRepository.update(userId, { booksReadCount: count });
     }
@@ -75,5 +95,23 @@ export class UserBooksService {
       relations: ['book'],
       order: { updatedAt: 'DESC' }
     });
+  }
+
+  async findAllWithPagination(skip: number = 0, take: number = 10): Promise<[UserBook[], number]> {
+      return this.userBookRepository.findAndCount({
+          skip,
+          take,
+          relations: ['user', 'book']
+      });
+  }
+
+  async removeByUserAndBook(userId: number, bookId: number): Promise<void> {
+      const userBook = await this.userBookRepository.findOne({
+        where: { userId, bookId },
+      });
+      if (!userBook) {
+          throw new NotFoundException('UserBook entry not found');
+      }
+      await this.userBookRepository.remove(userBook);
   }
 }

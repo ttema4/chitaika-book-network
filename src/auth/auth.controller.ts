@@ -5,7 +5,9 @@ import { SupertokensExceptionFilter } from './supertokens.filter';
 import EmailPassword from 'supertokens-node/recipe/emailpassword';
 import Session from 'supertokens-node/recipe/session';
 import SuperTokens from 'supertokens-node';
+import { ApiExcludeController } from '@nestjs/swagger';
 
+@ApiExcludeController()
 @Controller()
 @UseFilters(SupertokensExceptionFilter)
 export class AuthController {

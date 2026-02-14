@@ -26,7 +26,6 @@ export class TimingInterceptor implements NestInterceptor {
           if (isApi && !response.headersSent) {
             response.header('X-Elapsed-Time', `${elapsed}ms`);
           }
-          console.log(`Request to ${ctx.getRequest().url} took ${elapsed}ms`);
       }),
       map(data => {
           const className = context.getClass().name;

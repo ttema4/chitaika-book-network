@@ -1,4 +1,6 @@
 import { Controller, Get, Post, Body, Patch, Param, Delete, Render, UseInterceptors, UploadedFile, Res, Req, UseGuards, Sse, MessageEvent } from '@nestjs/common';
+import { CacheInterceptor } from '@nestjs/cache-manager';
+import { CacheControl } from '../common/decorators/cache-control.decorator';
 import { User } from './entities/user.entity';
 import { FileInterceptor } from '@nestjs/platform-express';
 import type { Response, Request } from 'express';
@@ -7,8 +9,10 @@ import { FilesService } from '../files/files.service';
 import { AuthGuard } from '../auth/auth.guard';
 import { FavoritesService } from '../favorites/favorites.service';
 import { UserBooksService } from '../user-books/user-books.service';
-import { Observable, filter, map } from 'rxjs';
+import { Observable, filter, map, tap } from 'rxjs';
+import { ApiExcludeController } from '@nestjs/swagger';
 
+@ApiExcludeController()
 @Controller('users')
 export class UsersController {
   constructor(
@@ -89,8 +93,9 @@ export class UsersController {
       }
       return res.redirect('/users/readers');
   }
-
   @Get()
+  @UseInterceptors(CacheInterceptor)
+  @CacheControl('private, max-age=60')
   @Render('users/list')
   async findAll() {
     const users = await this.usersService.findAll();
@@ -106,21 +111,22 @@ export class UsersController {
       return res.redirect(`/users/${user.id}`);
   }
 
-  @Sse('sse')
-  sse(@Req() req: Request): Observable<MessageEvent> {
+  @Sse('notifications')
+  notifications(@Req() req: Request): Observable<MessageEvent> {
       const user = (req as any).user;
-      return this.usersService.userSubscribed$.pipe(
-          filter(event =>  !!user && event.toUserId === user.id),
-          map(event => ({ data: { message: event.message } } as MessageEvent))
+      return UsersService.userSubscribed$.asObservable().pipe(
+          filter((event: any) =>  {
+             return !!user && Number(event.toUserId) === Number(user.id);
+          }),
+          map((event: any) => ({ data: { message: `Пользователь ${event.fromUser.username} подписался на вас` } } as MessageEvent))
       );
   }
-
   @Get(':id')
   @Render('users/profile')
   async findOne(@Param('id') id: string, @Req() req: Request) {
     const user = await this.usersService.findOne(+id);
     const currentUser = (req as any).user;
-    const isOwner = currentUser && currentUser.id === user.id;
+    const isOwner = currentUser && Number(currentUser.id) === Number(user.id);
     let isSubscribed = false;
 
     if (currentUser) {
@@ -160,7 +166,7 @@ export class UsersController {
             }));
     }
 
-    return { user, isOwner, isSubscribed, recommendations };
+    return { user, isOwner, isSubscribed, recommendations, isAuthenticated: !!currentUser };
   }
 
   @Patch(':id')

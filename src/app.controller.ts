@@ -1,10 +1,14 @@
-import { Controller, Get, Render, Req } from '@nestjs/common';
+import { Controller, Get, Render, Req, UseInterceptors } from '@nestjs/common';
+import { CacheInterceptor } from '@nestjs/cache-manager';
+import { CacheControl } from './common/decorators/cache-control.decorator';
 import { AppService } from './app.service';
 import { BooksService } from './books/books.service';
 import { FavoritesService } from './favorites/favorites.service';
 import { UserBooksService } from './user-books/user-books.service';
 import type { Request } from 'express';
+import { ApiExcludeController } from '@nestjs/swagger';
 
+@ApiExcludeController()
 @Controller()
 export class AppController {
   constructor(
@@ -56,6 +60,8 @@ export class AppController {
   }
 
   @Get('about')
+  @UseInterceptors(CacheInterceptor)
+  @CacheControl('public, max-age=3600')
   @Render('pages/about')
   about() {
     return {};

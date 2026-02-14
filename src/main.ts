@@ -43,7 +43,14 @@ async function bootstrap() {
     .setTitle('Book Network API')
     .setDescription('The Book Network API description')
     .setVersion('1.0')
+    .addCookieAuth('sAccessToken')
+    .addTag('auth')
     .addTag('books')
+    .addTag('users')
+    .addTag('comments')
+    .addTag('favorites')
+    .addTag('ratings')
+    .addTag('user-books')
     .build();
   const document = SwaggerModule.createDocument(app, config);
   SwaggerModule.setup('api/docs', app, document);

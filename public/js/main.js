@@ -152,6 +152,30 @@ document.addEventListener('DOMContentLoaded', () => {
         eventSource.onerror = (e) => {
              eventSource.close();
         };
+
+        const userEventSource = new EventSource('/users/notifications');
+        userEventSource.onmessage = (event) => {
+            console.log('Received notification event:', event);
+            try {
+                const data = JSON.parse(event.data);
+                if (typeof Toastify !== 'undefined' && data.message) {
+                    Toastify({
+                        text: data.message,
+                        duration: 5000,
+                        gravity: "top",
+                        position: "right",
+                        style: {
+                            background: "linear-gradient(to right, #10b981, #059669)",
+                        }
+                    }).showToast();
+                } else {
+                     console.log('Notification data structure unexpected:', data);
+                }
+            } catch (e) {
+                console.error("Failed to parse User SSE message", e);
+                console.log('Raw data:', event.data);
+            }
+        };
     }
 
     document.querySelectorAll('.collapsible-header').forEach(header => {
@@ -172,28 +196,5 @@ document.addEventListener('DOMContentLoaded', () => {
             if (isCollapsed) section.classList.add('is-collapsed');
         }
     });
-    const checkNotifications = async () => {
-        try {
-            const res = await fetch('/users/me/notifications');
-            if (res.ok) {
-                const data = await res.json();
-                if (data.notifications && data.notifications.length > 0) {
-                    data.notifications.forEach(msg => {
-                        Toastify({
-                            text: msg,
-                            duration: 5000,
-                            close: true,
-                            gravity: "top", 
-                            position: "right", 
-                            style: { background: "linear-gradient(to right, #3b82f6, #2563eb)" },
-                        }).showToast();
-                    });
-                    await fetch('/users/me/notifications', { method: 'DELETE' });
-                }
-            }
-        } catch (e) {
-        }
-    };
-    
-    checkNotifications();
 });
+

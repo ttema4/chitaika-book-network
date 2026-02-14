@@ -2,6 +2,14 @@
 # THIS FILE WAS AUTOMATICALLY GENERATED (DO NOT MODIFY)
 # ------------------------------------------------------
 
+type Favorite {
+  id: Int!
+  user_id: Int!
+  book_id: Int!
+  user: User!
+  book: Book!
+}
+
 type Book {
   id: Int!
   title: String!
@@ -10,7 +18,9 @@ type Book {
   text_url: String!
   genre: String
   description: String
-  comments: [Comment!]!
+  comments: [Comment!]
+  ratings: [Rating!]
+  favorites: [Favorite!]
 }
 
 type Comment {
@@ -21,6 +31,8 @@ type Comment {
   created_at: DateTime!
   user_id: Int!
   book_id: Int!
+  user: User!
+  book: Book!
 }
 
 """
@@ -28,13 +40,101 @@ A date-time string at UTC, such as 2019-12-03T09:54:33Z, compliant with the date
 """
 scalar DateTime
 
+type UserBook {
+  id: Int!
+  userId: Int!
+  bookId: Int!
+  status: UserBookStatus!
+  updatedAt: DateTime!
+  user: User!
+  book: Book!
+}
+
+enum UserBookStatus {
+  READING
+  READ
+  PLANNED
+}
+
+type User {
+  id: Int!
+  username: String!
+  email: String!
+  avatar_url: String
+  booksReadCount: Int!
+  role: String!
+  comments: [Comment!]
+  favorites: [Favorite!]
+  userBooks: [UserBook!]
+}
+
+type Rating {
+  id: Int!
+  rating: Int!
+  review: String
+  user_id: Int!
+  book_id: Int!
+  user: User!
+  book: Book!
+}
+
 type Query {
+  ratings(skip: Int, take: Int): [Rating!]!
+  rating(id: Int!): Rating
+  users(skip: Int, take: Int): [User!]!
+  user(id: Int!): User
+  favorites(skip: Int, take: Int): [Favorite!]!
+  favorite(id: Int!): Favorite
+  userBooks(skip: Int, take: Int): [UserBook!]!
+  userBook(id: Int!): UserBook
+  comments(skip: Int, take: Int): [Comment!]!
+  comment(id: Int!): Comment
   books(skip: Int, take: Int): [Book!]!
   book(id: Int!): Book
 }
 
 type Mutation {
+  createRating(createRatingInput: CreateRatingInput!): Rating!
+  removeRating(id: Int!): Boolean!
+  updateUser(id: Int!, updateUserInput: UpdateUserInput!): User!
+  createFavorite(createFavoriteInput: CreateFavoriteInput!): Favorite!
+  removeFavorite(id: Int!): Boolean!
+  createUserBook(createUserBookInput: CreateUserBookInput!): UserBook!
+  removeUserBook(id: Int!): Boolean!
+  createComment(createCommentInput: CreateCommentInput!): Comment!
+  removeComment(id: Int!): Boolean!
   createBook(createBookInput: CreateBookInput!): Book!
+}
+
+input CreateRatingInput {
+  user_id: Int!
+  book_id: Int!
+  rating: Int!
+  review: String
+}
+
+input UpdateUserInput {
+  username: String
+  avatar_url: String
+}
+
+input CreateFavoriteInput {
+  user_id: Int!
+  book_id: Int!
+}
+
+input CreateUserBookInput {
+  userId: Int!
+  bookId: Int!
+  status: UserBookStatus!
+}
+
+input CreateCommentInput {
+  content: String!
+  start_offset: Int!
+  end_offset: Int!
+  user_id: Int!
+  book_id: Int!
 }
 
 input CreateBookInput {

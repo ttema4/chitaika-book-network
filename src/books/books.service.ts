@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Book } from './entities/book.entity';
@@ -37,12 +37,20 @@ export class BooksService {
       });
   }
 
-  async update(id: number, updateBook: Partial<Book>): Promise<Book | null> {
+  async update(id: number, updateBook: Partial<Book>): Promise<Book> {
+    const book = await this.findOne(id);
+    if (!book) {
+        throw new NotFoundException(`Book with ID ${id} not found`);
+    }
     await this.booksRepository.update(id, updateBook);
-    return this.findOne(id);
+    return this.findOne(id) as Promise<Book>;
   }
 
   async remove(id: number): Promise<void> {
+    const book = await this.findOne(id);
+    if (!book) {
+        throw new NotFoundException(`Book with ID ${id} not found`);
+    }
     await this.booksRepository.delete(id);
   }
 }

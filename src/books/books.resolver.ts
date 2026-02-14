@@ -4,12 +4,18 @@ import { Book } from './models/book.model';
 import { CreateBookInput } from './dto/create-book.input';
 import { CommentsService } from '../comments/comments.service';
 import { Comment } from '../comments/models/comment.model';
+import { RatingsService } from '../ratings/ratings.service';
+import { Rating } from '../ratings/models/rating.model';
+import { FavoritesService } from '../favorites/favorites.service';
+import { Favorite } from '../favorites/models/favorite.model';
 
 @Resolver(() => Book)
 export class BooksResolver {
   constructor(
       private readonly booksService: BooksService,
-      private readonly commentsService: CommentsService  
+      private readonly commentsService: CommentsService,
+      private readonly ratingsService: RatingsService,
+      private readonly favoritesService: FavoritesService,
   ) {}
 
   @Query(() => [Book])
@@ -29,6 +35,16 @@ export class BooksResolver {
   @ResolveField(() => [Comment])
   async comments(@Parent() book: Book) {
       return this.commentsService.findAll(book.id);
+  }
+
+  @ResolveField(() => [Rating])
+  async ratings(@Parent() book: Book) {
+      return this.ratingsService.findByBook(book.id);
+  }
+
+  @ResolveField(() => [Favorite])
+  async favorites(@Parent() book: Book) {
+      return this.favoritesService.findAllByBook(book.id);
   }
 
   @Mutation(() => Book)

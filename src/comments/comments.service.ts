@@ -26,6 +26,21 @@ export class CommentsService {
     return this.commentsRepository.find({ relations: ['user', 'book'] });
   }
 
+  async findAllByUser(userId: number): Promise<Comment[]> {
+    return this.commentsRepository.find({ 
+        where: { user_id: userId },
+        relations: ['book']
+    });
+  }
+
+  async findAllWithPagination(skip: number = 0, take: number = 10): Promise<[Comment[], number]> {
+      return this.commentsRepository.findAndCount({
+          skip,
+          take,
+          relations: ['user', 'book']
+      });
+  }
+
   async findOne(id: number): Promise<Comment> {
     const comment = await this.commentsRepository.findOne({ 
         where: { id },

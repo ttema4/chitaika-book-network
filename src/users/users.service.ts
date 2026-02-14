@@ -6,7 +6,7 @@ import { Subject } from 'rxjs';
 
 @Injectable()
 export class UsersService {
-  public readonly userSubscribed$ = new Subject<{ toUserId: number, message: string }>();
+  public static readonly userSubscribed$ = new Subject<{ type: string, toUserId: number, fromUser: User }>();
 
   constructor(
     @InjectRepository(User)
@@ -20,6 +20,13 @@ export class UsersService {
 
   findAll(): Promise<User[]> {
     return this.usersRepository.find();
+  }
+
+  async findAllWithPagination(skip: number = 0, take: number = 10): Promise<[User[], number]> {
+    return this.usersRepository.findAndCount({
+      skip,
+      take,
+    });
   }
 
   async findOne(id: number): Promise<User> {
@@ -68,9 +75,11 @@ export class UsersService {
         user.friends.push(friend);
         await this.usersRepository.save(user);
 
-        this.userSubscribed$.next({ 
+        console.log(`[UsersService] Emitting subscription event. From: ${user.id} To: ${friend.id}`);
+        UsersService.userSubscribed$.next({ 
+            type: 'subscription',
             toUserId: friend.id, 
-            message: `Пользователь ${user.username} подписался на вас` 
+            fromUser: user 
         });
     }
   }
