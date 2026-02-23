@@ -16,15 +16,15 @@
       <form class="card" action="/register" method="post" autocomplete="on">
         <label class="field">
           <span class="field__label">Имя пользователя</span>
-          <input type="text" name="username" placeholder="Ваше имя" required>
+          <input type="text" name="username" placeholder="Ваше имя" autocomplete="name" required>
         </label>
         <label class="field">
           <span class="field__label">Email</span>
-          <input type="email" name="email" placeholder="you@example.com" required>
+          <input type="email" name="email" placeholder="you@example.com" autocomplete="username" required>
         </label>
         <label class="field">
           <span class="field__label">Пароль</span>
-          <input type="password" name="password" placeholder="Придумайте пароль" minlength="6" required>
+          <input type="password" name="password" placeholder="Придумайте пароль" minlength="6" autocomplete="new-password" required>
         </label>
         <button class="btn-ghost" type="submit">Создать аккаунт</button>
         <a class="link" href="/login">Уже есть аккаунт?</a>

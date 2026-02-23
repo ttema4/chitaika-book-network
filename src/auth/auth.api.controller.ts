@@ -31,7 +31,7 @@ export class AuthApiController {
 
       await Session.createNewSession(req, res, tenantId, new SuperTokens.RecipeUserId(response.user.id), {}, {});
 
-      const email = response.user.emails && response.user.emails.length > 0 ? response.user.emails[0] : body.email;
+      const email = response.user.emails[0];
       await this.authService.syncUser(response.user.id, email);
 
       return { message: 'Login successful', userId: response.user.id };
@@ -52,7 +52,7 @@ export class AuthApiController {
 
         await Session.createNewSession(req, res, tenantId, new SuperTokens.RecipeUserId(response.user.id), {}, {});
         
-        const email = response.user.emails && response.user.emails.length > 0 ? response.user.emails[0] : body.email;
+        const email = response.user.emails[0];
         await this.authService.syncUser(response.user.id, email, body.username);
 
         return { message: 'Registration successful', userId: response.user.id };

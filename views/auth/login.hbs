@@ -16,11 +16,11 @@
       <form class="card" action="/login" method="post" autocomplete="on">
         <label class="field">
           <span class="field__label">Email</span>
-          <input type="email" name="email" placeholder="you@example.com" required>
+          <input type="email" name="email" placeholder="you@example.com" autocomplete="username" required>
         </label>
         <label class="field">
           <span class="field__label">Пароль</span>
-          <input type="password" name="password" minlength="6" required>
+          <input type="password" name="password" minlength="6" autocomplete="current-password" required>
         </label>
         <button class="btn-ghost" type="submit">Войти</button>
         <a class="link" href="/register">Создать аккаунт</a>

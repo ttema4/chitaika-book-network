@@ -27,7 +27,11 @@ export class EtagInterceptor implements NestInterceptor {
         if (typeof data === 'string' || Buffer.isBuffer(data)) {
             entity = data;
         } else if (typeof data === 'object' && data !== null) {
-            entity = JSON.stringify(data);
+            const currentUser = res.locals?.currentUser;
+            const etagData = currentUser
+                ? { ...data, __authId: currentUser.id }
+                : { ...data, __authId: null };
+            entity = JSON.stringify(etagData);
         } else {
             return;
         }

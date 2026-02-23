@@ -11,7 +11,8 @@ export class InitialSchema1000000000000 implements MigrationInterface {
                 "email" VARCHAR(100) NOT NULL UNIQUE,
                 "supertokens_id" VARCHAR(128),
                 "role" VARCHAR(20) NOT NULL DEFAULT 'user',
-                "avatar_url" VARCHAR
+                "avatar_url" VARCHAR,
+                "books_read_count" INTEGER NOT NULL DEFAULT 0
             )
         `);
 

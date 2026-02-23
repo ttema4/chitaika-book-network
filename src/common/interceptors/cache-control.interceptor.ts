@@ -17,9 +17,25 @@ export class CacheControlInterceptor implements NestInterceptor {
     const response = ctx.getResponse<Response>();
     
     const cacheControl = this.reflector.get<string>(CACHE_CONTROL_KEY, context.getHandler());
+    const req = ctx.getRequest();
 
-    if (cacheControl && !response.headersSent) {
+    const isAuthenticated = req.user || (req.res && req.res.locals && req.res.locals.currentUser);
+
+    response.header('Vary', 'Cookie');
+
+    const className = context.getClass().name;
+    const isMvc = className.endsWith('Controller') && !className.endsWith('ApiController');
+
+    if (isMvc) {
+        response.header('Cache-Control', 'private, no-cache, no-store, must-revalidate');
+        response.header('Pragma', 'no-cache');
+        response.header('Expires', '0');
+    } else if (isAuthenticated) {
+        response.header('Cache-Control', 'private, no-cache, must-revalidate');
+    } else if (cacheControl && !response.headersSent) {
         response.header('Cache-Control', cacheControl);
+    } else {
+        response.header('Cache-Control', 'private, no-cache, must-revalidate');
     }
 
     return next.handle();

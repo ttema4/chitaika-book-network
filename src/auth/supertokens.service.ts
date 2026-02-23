@@ -30,6 +30,7 @@ export class SupertokensService {
           websiteDomain = websiteDomain.replace('${PORT}', port);
         }
     }
+    
 
     supetokens.init({
       appInfo: {
@@ -39,6 +40,7 @@ export class SupertokensService {
         apiBasePath: '/auth',
         websiteBasePath: '/auth',
       },
+
       supertokens: {
         connectionURI: this.configService.get<string>('SUPERTOKENS_CONNECTION_URI', 'https://try.supertokens.com'), 
         apiKey: this.configService.get<string>('SUPERTOKENS_API_KEY'),
@@ -47,6 +49,7 @@ export class SupertokensService {
         EmailPassword.init(),
         Session.init({
             cookieSecure: false,
+            cookieSameSite: "lax",
             getTokenTransferMethod: () => 'cookie',
             antiCsrf: "NONE",
         }),

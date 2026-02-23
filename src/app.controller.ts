@@ -1,5 +1,4 @@
-import { Controller, Get, Render, Req, UseInterceptors } from '@nestjs/common';
-import { CacheInterceptor } from '@nestjs/cache-manager';
+import { Controller, Get, Render, Req } from '@nestjs/common';
 import { CacheControl } from './common/decorators/cache-control.decorator';
 import { AppService } from './app.service';
 import { BooksService } from './books/books.service';
@@ -60,7 +59,6 @@ export class AppController {
   }
 
   @Get('about')
-  @UseInterceptors(CacheInterceptor)
   @CacheControl('public, max-age=3600')
   @Render('pages/about')
   about() {

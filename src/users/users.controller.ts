@@ -1,5 +1,4 @@
 import { Controller, Get, Post, Body, Patch, Param, Delete, Render, UseInterceptors, UploadedFile, Res, Req, UseGuards, Sse, MessageEvent } from '@nestjs/common';
-import { CacheInterceptor } from '@nestjs/cache-manager';
 import { CacheControl } from '../common/decorators/cache-control.decorator';
 import { User } from './entities/user.entity';
 import { FileInterceptor } from '@nestjs/platform-express';
@@ -94,7 +93,6 @@ export class UsersController {
       return res.redirect('/users/readers');
   }
   @Get()
-  @UseInterceptors(CacheInterceptor)
   @CacheControl('private, max-age=60')
   @Render('users/list')
   async findAll() {

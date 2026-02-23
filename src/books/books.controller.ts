@@ -1,5 +1,4 @@
 import { Controller, Get, Render, Post, Body, UseInterceptors, UploadedFiles, Res, Param, Patch, Delete, Sse, MessageEvent, UseGuards, Req, Query, DefaultValuePipe, NotFoundException } from '@nestjs/common';
-import { CacheInterceptor } from '@nestjs/cache-manager';
 import { CacheControl } from '../common/decorators/cache-control.decorator';
 import { FileFieldsInterceptor } from '@nestjs/platform-express';
 import type { Response, Request } from 'express';
@@ -41,7 +40,6 @@ export class BooksController {
 
   @Get('create')
   @UseGuards(AuthGuard)
-  @UseInterceptors(CacheInterceptor)
   @CacheControl('private, max-age=3600')
   @Render('books/create')
   createPage() {
@@ -96,7 +94,6 @@ export class BooksController {
   }
 
   @Get()
-  @UseInterceptors(CacheInterceptor)
   @CacheControl('private, max-age=60')
   @Render('books/list')
   async findAll(@Req() req: Request) {
@@ -116,7 +113,6 @@ export class BooksController {
     return { books };
   }
   @Get(':id/read')
-  @UseInterceptors(CacheInterceptor)
   @CacheControl('private, max-age=3600')
   @Render('books/read')
   async readPage(@Param('id') id: string, @Req() req: Request, @Res({ passthrough: true }) res: Response) {
@@ -181,7 +177,6 @@ export class BooksController {
   @Get(':id/edit')
   @UseGuards(AuthGuard)
   @Render('books/edit')
-  @UseInterceptors(CacheInterceptor)
   @CacheControl('private, max-age=60')
   async editPage(@Param('id') id: string) {
     const book = await this.booksService.findOne(+id);
