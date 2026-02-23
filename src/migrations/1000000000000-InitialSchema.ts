@@ -11,8 +11,7 @@ export class InitialSchema1000000000000 implements MigrationInterface {
                 "email" VARCHAR(100) NOT NULL UNIQUE,
                 "supertokens_id" VARCHAR(128),
                 "role" VARCHAR(20) NOT NULL DEFAULT 'user',
-                "avatar_url" VARCHAR,
-                "books_read_count" INTEGER NOT NULL DEFAULT 0
+                "avatar_url" VARCHAR
             )
         `);
 
@@ -69,9 +68,23 @@ export class InitialSchema1000000000000 implements MigrationInterface {
                 CONSTRAINT "FK_user_friends_friend" FOREIGN KEY ("friend_id") REFERENCES "users"("id") ON DELETE CASCADE
             )
         `);
+
+        await queryRunner.query(`
+            CREATE TABLE "user_books" (
+                "id" SERIAL PRIMARY KEY,
+                "user_id" INTEGER NOT NULL,
+                "book_id" INTEGER NOT NULL,
+                "status" VARCHAR NOT NULL DEFAULT 'planned',
+                "created_at" TIMESTAMP NOT NULL DEFAULT now(),
+                "updated_at" TIMESTAMP NOT NULL DEFAULT now(),
+                CONSTRAINT "FK_user_books_user_id" FOREIGN KEY ("user_id") REFERENCES "users"("id") ON DELETE CASCADE,
+                CONSTRAINT "FK_user_books_book_id" FOREIGN KEY ("book_id") REFERENCES "books"("id") ON DELETE CASCADE
+            )
+        `);
     }
 
     public async down(queryRunner: QueryRunner): Promise<void> {
+        await queryRunner.query(`DROP TABLE "user_books"`);
         await queryRunner.query(`DROP TABLE "user_friends"`);
         await queryRunner.query(`DROP TABLE "ratings"`);
         await queryRunner.query(`DROP TABLE "favorites"`);
