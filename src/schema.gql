@@ -96,15 +96,19 @@ type Query {
 type Mutation {
   createRating(createRatingInput: CreateRatingInput!): Rating!
   removeRating(id: Int!): Boolean!
+  createUser(createUserInput: CreateUserInput!): User!
   updateUser(id: Int!, updateUserInput: UpdateUserInput!): User!
+  removeUser(id: Int!): Boolean!
+  addFriend(friendId: Int!): Boolean!
+  removeFriend(friendId: Int!): Boolean!
   createFavorite(createFavoriteInput: CreateFavoriteInput!): Favorite!
-  removeFavorite(id: Int!): Boolean!
+  removeFavorite(bookId: Int!): Boolean!
   createUserBook(createUserBookInput: CreateUserBookInput!): UserBook!
-  removeUserBook(id: Int!): Boolean!
+  removeUserBook(bookId: Int!): Boolean!
   createComment(createCommentInput: CreateCommentInput!): Comment!
   removeComment(id: Int!): Boolean!
   createBook(createBookInput: CreateBookInput!): Book!
-  updateBook(id: Int!, updateBookInput: CreateBookInput!): Book!
+  updateBook(id: Int!, updateBookInput: UpdateBookInput!): Book!
   deleteBook(id: Int!): Boolean!
 }
 
@@ -113,6 +117,13 @@ input CreateRatingInput {
   book_id: Int!
   rating: Int!
   review: String
+}
+
+input CreateUserInput {
+  username: String!
+  email: String!
+  supertokens_id: String
+  avatar_url: String
 }
 
 input UpdateUserInput {
@@ -142,6 +153,15 @@ input CreateCommentInput {
 input CreateBookInput {
   title: String!
   author: String!
+  genre: String
+  description: String
+  cover_url: String
+  text_url: String
+}
+
+input UpdateBookInput {
+  title: String
+  author: String
   genre: String
   description: String
   cover_url: String

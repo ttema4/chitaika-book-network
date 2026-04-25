@@ -2,6 +2,7 @@ import { Resolver, Query, Mutation, Args, Int, ResolveField, Parent, Context } f
 import { UsersService } from './users.service';
 import { User } from './models/user.model';
 import { UpdateUserInput } from './dto/update-user.input';
+import { CreateUserInput } from './dto/create-user.input';
 import { Comment } from '../comments/models/comment.model';
 import { CommentsService } from '../comments/comments.service';
 import { Favorite } from '../favorites/models/favorite.model';
@@ -35,6 +36,11 @@ export class UsersResolver {
   }
 
   @Mutation(() => User)
+  async createUser(@Args('createUserInput') createUserInput: CreateUserInput) {
+    return this.usersService.create(createUserInput);
+  }
+
+  @Mutation(() => User)
   @UseGuards(AuthGuard)
   async updateUser(
       @Args('id', { type: () => Int }) id: number,
@@ -46,6 +52,31 @@ export class UsersResolver {
          throw new ForbiddenException('You can only update your own profile');
     }
     return this.usersService.update(id, updateUserInput);
+  }
+
+  @Mutation(() => Boolean)
+  @UseGuards(AuthGuard)
+  async removeUser(@Args('id', { type: () => Int }) id: number, @Context() context: any) {
+    const user = context.req.user;
+    if (user.id !== id && user.role !== 'admin') {
+         throw new ForbiddenException('You can only delete your own profile');
+    }
+    await this.usersService.remove(id);
+    return true;
+  }
+
+  @Mutation(() => Boolean)
+  @UseGuards(AuthGuard)
+  async addFriend(@Args('friendId', { type: () => Int }) friendId: number, @Context() context: any) {
+      await this.usersService.addFriend(context.req.user.id, friendId);
+      return true;
+  }
+
+  @Mutation(() => Boolean)
+  @UseGuards(AuthGuard)
+  async removeFriend(@Args('friendId', { type: () => Int }) friendId: number, @Context() context: any) {
+      await this.usersService.removeFriend(context.req.user.id, friendId);
+      return true;
   }
 
   @ResolveField(() => [Comment])
@@ -63,4 +94,3 @@ export class UsersResolver {
       return this.userBooksService.findAllByUser(user.id);
   }
 }
-

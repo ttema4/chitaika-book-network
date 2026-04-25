@@ -2,6 +2,7 @@ import { Resolver, Query, Mutation, Args, Int, ResolveField, Parent, Context } f
 import { BooksService } from './books.service';
 import { Book } from './models/book.model';
 import { CreateBookInput } from './dto/create-book.input';
+import { UpdateBookInput } from './dto/update-book.input';
 import { CommentsService } from '../comments/comments.service';
 import { Comment } from '../comments/models/comment.model';
 import { RatingsService } from '../ratings/ratings.service';
@@ -63,7 +64,7 @@ export class BooksResolver {
   @UseGuards(AuthGuard)
   async updateBook(
       @Args('id', { type: () => Int }) id: number,
-      @Args('updateBookInput') updateBookInput: CreateBookInput,
+      @Args('updateBookInput') updateBookInput: UpdateBookInput,
       @Context() context: any,
   ) {
     if (context.req.user.role !== 'admin') {

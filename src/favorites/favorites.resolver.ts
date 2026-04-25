@@ -43,18 +43,9 @@ export class FavoritesResolver {
 
   @Mutation(() => Boolean)
   @UseGuards(AuthGuard)
-  async removeFavorite(@Args('id', { type: () => Int }) id: number, @Context() context: any) {
-    const favorite = await this.favoritesService.findOne(id);
-    if (!favorite) {
-        throw new NotFoundException('Favorite not found');
-    }
-    
+  async removeFavorite(@Args('bookId', { type: () => Int }) bookId: number, @Context() context: any) {
     const user = context.req.user;
-    if (favorite.user_id !== user.id && user.role !== 'admin') {
-        throw new ForbiddenException('You can only remove your own favorites');
-    }
-
-    await this.favoritesService.remove(favorite.user_id, favorite.book_id);
+    await this.favoritesService.remove(user.id, bookId);
     return true;
   }
 

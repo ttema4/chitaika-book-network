@@ -43,18 +43,9 @@ export class UserBooksResolver {
 
   @Mutation(() => Boolean)
   @UseGuards(AuthGuard)
-  async removeUserBook(@Args('id', { type: () => Int }) id: number, @Context() context: any) {
-    const userBook = await this.userBooksService.findById(id);
-    if (!userBook) {
-        throw new NotFoundException('Entry not found');
-    }
-    
+  async removeUserBook(@Args('bookId', { type: () => Int }) bookId: number, @Context() context: any) {
     const user = context.req.user;
-    if (userBook.userId !== user.id && user.role !== 'admin') {
-        throw new ForbiddenException('You can only remove your own entries');
-    }
-
-    await this.userBooksService.remove(id);
+    await this.userBooksService.removeByUserAndBook(user.id, bookId);
     return true;
   }
 
