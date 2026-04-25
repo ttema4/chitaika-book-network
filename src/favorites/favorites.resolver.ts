@@ -1,4 +1,4 @@
-import { Resolver, Query, Mutation, Args, Int, ResolveField, Parent } from '@nestjs/graphql';
+import { Resolver, Query, Mutation, Args, Int, ResolveField, Parent, Context } from '@nestjs/graphql';
 import { FavoritesService } from './favorites.service';
 import { Favorite } from './models/favorite.model';
 import { CreateFavoriteInput } from './dto/create-favorite.input';
@@ -6,6 +6,8 @@ import { User } from '../users/models/user.model';
 import { UsersService } from '../users/users.service';
 import { Book } from '../books/models/book.model';
 import { BooksService } from '../books/books.service';
+import { UseGuards, ForbiddenException, NotFoundException } from '@nestjs/common';
+import { AuthGuard } from '../auth/auth.guard';
 
 @Resolver(() => Favorite)
 export class FavoritesResolver {
@@ -30,14 +32,28 @@ export class FavoritesResolver {
   }
 
   @Mutation(() => Favorite)
-  async createFavorite(@Args('createFavoriteInput') createFavoriteInput: CreateFavoriteInput) {
-    return this.favoritesService.add(createFavoriteInput.user_id, createFavoriteInput.book_id);
+  @UseGuards(AuthGuard)
+  async createFavorite(
+      @Args('createFavoriteInput') createFavoriteInput: CreateFavoriteInput,
+      @Context() context: any,
+  ) {
+    const userId = context.req.user.id;
+    return this.favoritesService.add(userId, createFavoriteInput.book_id);
   }
 
   @Mutation(() => Boolean)
-  async removeFavorite(@Args('id', { type: () => Int }) id: number) {
+  @UseGuards(AuthGuard)
+  async removeFavorite(@Args('id', { type: () => Int }) id: number, @Context() context: any) {
     const favorite = await this.favoritesService.findOne(id);
-    if (!favorite) return false;
+    if (!favorite) {
+        throw new NotFoundException('Favorite not found');
+    }
+    
+    const user = context.req.user;
+    if (favorite.user_id !== user.id && user.role !== 'admin') {
+        throw new ForbiddenException('You can only remove your own favorites');
+    }
+
     await this.favoritesService.remove(favorite.user_id, favorite.book_id);
     return true;
   }

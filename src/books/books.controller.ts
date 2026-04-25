@@ -1,4 +1,4 @@
-import { Controller, Get, Render, Post, Body, UseInterceptors, UploadedFiles, Res, Param, Patch, Delete, Sse, MessageEvent, UseGuards, Req, Query, DefaultValuePipe, NotFoundException } from '@nestjs/common';
+import { Controller, Get, Render, Post, Body, UseInterceptors, UploadedFiles, Res, Param, Patch, Delete, Sse, MessageEvent, UseGuards, Req,NotFoundException, ForbiddenException } from '@nestjs/common';
 import { CacheControl } from '../common/decorators/cache-control.decorator';
 import { FileFieldsInterceptor } from '@nestjs/platform-express';
 import type { Response, Request } from 'express';
@@ -156,11 +156,11 @@ export class BooksController {
     const book = await this.booksService.findOne(+id);
     let isFavorite = false;
     let userBookStatus = 'none';
+    const currentUser = (req as any).user;
+    const isAdmin = currentUser?.role === 'admin';
     
-    // @ts-ignore
-    if (req.user) {
-         // @ts-ignore
-         const userId = req.user.id;
+    if (currentUser) {
+         const userId = currentUser.id;
          isFavorite = await this.favoritesService.isFavorite(userId, +id);
          const userBook = await this.userBooksService.findOne(userId, +id);
          if (userBook) {
@@ -170,7 +170,8 @@ export class BooksController {
 
     return { 
         book: { ...book, isFavorite, userBookStatus },
-        user: (req as any).user
+        user: currentUser,
+        isAdmin
     };
   }
 
@@ -194,7 +195,11 @@ export class BooksController {
     @Body() body: { title: string; author: string; genre?: string; description?: string },
     @UploadedFiles() files: { cover?: Express.Multer.File[]; text?: Express.Multer.File[] },
     @Res() res: Response,
+    @Req() req: Request,
   ) {
+    if ((req as any).user.role !== 'admin') {
+        throw new ForbiddenException('Only admins can update books');
+    }
     const { title, author, genre, description } = body;
     const coverFile = files.cover ? files.cover[0] : null;
     const textFile = files.text ? files.text[0] : null;
@@ -221,7 +226,10 @@ export class BooksController {
   
   @Delete(':id')
   @UseGuards(AuthGuard)
-  async remove(@Param('id') id: string, @Res() res: Response) {
+  async remove(@Param('id') id: string, @Res() res: Response, @Req() req: Request) {
+    if ((req as any).user.role !== 'admin') {
+        throw new ForbiddenException('Only admins can delete books');
+    }
     await this.booksService.remove(+id);
     return res.redirect('/books');
   }

@@ -15,53 +15,71 @@ export class AllExceptionsFilter implements ExceptionFilter {
     const response = ctx.getResponse<Response>();
     const request = ctx.getRequest<Request>();
     
+    if (response.headersSent) {
+        return;
+    }
+
     let status = HttpStatus.INTERNAL_SERVER_ERROR;
     let message: string | object = 'Internal Server Error';
+
+    const logDetails = {
+        path: request.url,
+        method: request.method,
+        exception: exception instanceof Error ? {
+            name: exception.name,
+            message: exception.message,
+            stack: exception.stack,
+        } : exception,
+    };
+    this.logger.error(`Exception caught: ${JSON.stringify(logDetails)}`);
 
     if (exception instanceof HttpException) {
         status = exception.getStatus();
         message = exception.getResponse();
     } else if (exception instanceof QueryFailedError) {
-        if (exception.driverError?.code === '23505') {
+        const driverError = (exception as any).driverError;
+        status = HttpStatus.BAD_REQUEST;
+        
+        if (driverError?.code === '23505') {
             status = HttpStatus.CONFLICT;
-            message = 'Duplicate entry';
+            message = 'Record with these details already exists';
+        } else if (driverError?.code === '23503') {
+            if (driverError.detail?.includes('book_id')) {
+                message = 'Specified book not found';
+            } else if (driverError.detail?.includes('user_id')) {
+                message = 'Specified user not found';
+            } else {
+                message = 'Data integrity violation (foreign key error)';
+            }
         } else {
-            status = HttpStatus.BAD_REQUEST;
-            message = exception.message;
+            message = 'Database operation failed';
         }
     } else if (exception instanceof EntityNotFoundError) {
         status = HttpStatus.NOT_FOUND;
         message = 'Entity not found';
-    } else if (exception instanceof Error) {
-        message = exception.message;
+    } else {
+        status = HttpStatus.INTERNAL_SERVER_ERROR;
+        message = 'An unexpected error occurred';
     }
     
     if (typeof status !== 'number' || isNaN(status)) {
         status = HttpStatus.INTERNAL_SERVER_ERROR;
     }
 
-    this.logger.error(`Exception caught: ${JSON.stringify(message)}, Status: ${status}, Path: ${request.url}`);
+    const errorResponse = {
+        statusCode: status,
+        timestamp: new Date().toISOString(),
+        path: request.url,
+        message: typeof message === 'string' ? message : (message as any).message || message,
+    };
 
     if (request.url.startsWith('/api') || request.headers.accept?.includes('application/json')) {
-        response
-          .status(status)
-          .json({
-            statusCode: status,
-            timestamp: new Date().toISOString(),
-            path: request.url,
-            message,
-          });
+        response.status(status).json(errorResponse);
     } else {
-        const errorMsg = typeof message === 'string' 
-            ? message 
-            : (typeof message === 'object' && message !== null && 'message' in message 
-                ? (message as any).message 
-                : JSON.stringify(message));
-
         response
             .status(status)
             .render('error', { 
-                message: errorMsg,
+                message: errorResponse.message,
                 statusCode: status 
             });
     }

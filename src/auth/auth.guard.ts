@@ -7,16 +7,24 @@ export class AuthGuard implements CanActivate {
     context: ExecutionContext,
   ): boolean | Promise<boolean> | Observable<boolean> {
     const request = context.switchToHttp().getRequest();
-    if (!request.user) {
-         // If generic guard, return false (403). 
-         // But for a web app, we often want to redirect to login.
-         // We can handle this via exception filter or just return false and let the controller handle it, 
-         // OR we can implement a specific RedirectGuard.
-         // For now, let's return false and handle redirect in ExceptionFilter or manually.
-         const response = context.switchToHttp().getResponse();
-         response.redirect('/login');
-         return false;
+    
+    if (request.user) {
+        return true;
     }
-    return true;
+
+    const response = context.switchToHttp().getResponse();
+    
+    // PATCH, PUT, DELETE are always programmatic. 
+    // Also check for /api prefix or application/json header.
+    const isApiRequest = request.url.startsWith('/api') || 
+                         request.headers['accept']?.includes('application/json') ||
+                         ['PATCH', 'PUT', 'DELETE'].includes(request.method);
+
+    if (isApiRequest) {
+        throw new UnauthorizedException('Session expired or unauthorized');
+    } else {
+        response.redirect('/login');
+        return false;
+    }
   }
 }

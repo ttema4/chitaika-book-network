@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, Render, UseInterceptors, UploadedFile, Res, Req, UseGuards, Sse, MessageEvent } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, Render, UseInterceptors, UploadedFile, Res, Req, UseGuards, Sse, MessageEvent, ForbiddenException } from '@nestjs/common';
 import { CacheControl } from '../common/decorators/cache-control.decorator';
 import { User } from './entities/user.entity';
 import { FileInterceptor } from '@nestjs/platform-express';
@@ -6,9 +6,9 @@ import type { Response, Request } from 'express';
 import { UsersService } from './users.service';
 import { FilesService } from '../files/files.service';
 import { AuthGuard } from '../auth/auth.guard';
-import { FavoritesService } from '../favorites/favorites.service';
-import { UserBooksService } from '../user-books/user-books.service';
-import { Observable, filter, map, tap } from 'rxjs';
+import { FavoritesService } from './../favorites/favorites.service';
+import { UserBooksService } from './../user-books/user-books.service';
+import { Observable, filter, map } from 'rxjs';
 import { ApiExcludeController } from '@nestjs/swagger';
 
 @ApiExcludeController()
@@ -30,8 +30,9 @@ export class UsersController {
     @Res() res: Response,
     @Req() req: Request,
   ) {
-    if ((req as any).user.id !== +id && (req as any).user.role !== 'admin') {
-         return res.redirect(`/users/${id}`);
+    const user = (req as any).user;
+    if (user.id !== +id && user.role !== 'admin') {
+         throw new ForbiddenException('You can only update your own avatar');
     }
 
     if (!file) {
@@ -119,6 +120,7 @@ export class UsersController {
           map((event: any) => ({ data: { message: `Пользователь ${event.fromUser.username} подписался на вас` } } as MessageEvent))
       );
   }
+
   @Get(':id')
   @Render('users/profile')
   async findOne(@Param('id') id: string, @Req() req: Request) {
@@ -127,15 +129,15 @@ export class UsersController {
     const isOwner = currentUser && Number(currentUser.id) === Number(user.id);
     let isSubscribed = false;
 
+    let myFavIds = new Set<number>();
     if (currentUser) {
         if (!isOwner) {
             isSubscribed = user.subscribers.some(sub => sub.id === currentUser.id);
         }
-
+        const myFavs = await this.favoritesService.findAllByUser(currentUser.id);
+        myFavIds = new Set(myFavs.map(f => f.book.id));
+        
         if (user.favorites && user.favorites.length > 0) {
-             const myFavs = await this.favoritesService.findAllByUser(currentUser.id);
-             const myFavIds = new Set(myFavs.map(f => f.book.id));
-             
              user.favorites = user.favorites.map(fav => {
                  fav.book = {
                      ...fav.book,
@@ -147,9 +149,19 @@ export class UsersController {
     }
 
     const userBooksState = await this.userBooksService.findAllByUser(+id);
-    (user as any).reading = userBooksState.filter(ub => ub.status === 'reading').map(ub => ub.book);
-    (user as any).planned = userBooksState.filter(ub => ub.status === 'planned').map(ub => ub.book);
-    (user as any).readBooks = userBooksState.filter(ub => ub.status === 'read').map(ub => ub.book);
+    
+    (user as any).reading = userBooksState.filter(ub => ub.status === 'reading').map(ub => ({
+        ...ub.book,
+        isFavorite: myFavIds.has(ub.book.id)
+    }));
+    (user as any).planned = userBooksState.filter(ub => ub.status === 'planned').map(ub => ({
+        ...ub.book,
+        isFavorite: myFavIds.has(ub.book.id)
+    }));
+    (user as any).readBooks = userBooksState.filter(ub => ub.status === 'read').map(ub => ({
+        ...ub.book,
+        isFavorite: myFavIds.has(ub.book.id)
+    }));
 
     let recommendations: any[] = [];
     if (user.friends && user.friends.length > 0) {
@@ -160,7 +172,8 @@ export class UsersController {
             .filter(ub => friendsIds.has(ub.user.id))
             .map(ub => ({
                 ...ub.book,
-                recommender: ub.user
+                recommender: ub.user,
+                isFavorite: myFavIds.has(ub.book.id)
             }));
     }
 
@@ -168,12 +181,22 @@ export class UsersController {
   }
 
   @Patch(':id')
-  update(@Param('id') id: string, @Body() updateUserDto: any) {
+  @UseGuards(AuthGuard)
+  async update(@Param('id') id: string, @Body() updateUserDto: any, @Req() req: Request) {
+    const user = (req as any).user;
+    if (user.id !== +id && user.role !== 'admin') {
+         throw new ForbiddenException('You can only update your own profile');
+    }
     return this.usersService.update(+id, updateUserDto);
   }
 
   @Delete(':id')
-  remove(@Param('id') id: string) {
+  @UseGuards(AuthGuard)
+  async remove(@Param('id') id: string, @Req() req: Request) {
+    const user = (req as any).user;
+    if (user.id !== +id && user.role !== 'admin') {
+         throw new ForbiddenException('You can only delete your own profile');
+    }
     return this.usersService.remove(+id);
   }
 }

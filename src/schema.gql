@@ -104,6 +104,8 @@ type Mutation {
   createComment(createCommentInput: CreateCommentInput!): Comment!
   removeComment(id: Int!): Boolean!
   createBook(createBookInput: CreateBookInput!): Book!
+  updateBook(id: Int!, updateBookInput: CreateBookInput!): Book!
+  deleteBook(id: Int!): Boolean!
 }
 
 input CreateRatingInput {

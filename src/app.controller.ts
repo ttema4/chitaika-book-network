@@ -1,4 +1,4 @@
-import { Controller, Get, Render, Req } from '@nestjs/common';
+import { Controller, Get, Post, Body, Render, UseInterceptors, UploadedFiles, Res, Param, Patch, Delete, Sse, MessageEvent, UseGuards, Req, Query, DefaultValuePipe, NotFoundException } from '@nestjs/common';
 import { CacheControl } from './common/decorators/cache-control.decorator';
 import { AppService } from './app.service';
 import { BooksService } from './books/books.service';
@@ -24,11 +24,12 @@ export class AppController {
     let books: any[] = fetchedBooks;
     const readingNow = await this.userBooksService.findLatestReading();
     
-    // @ts-ignore
-    if (req.user) {
-        // @ts-ignore
-        const userFavorites = await this.favoritesService.findAllByUser(req.user.id);
-        const favIds = new Set(userFavorites.map(f => f.book.id));
+    let favIds = new Set<number>();
+    const currentUser = (req as any).user;
+    
+    if (currentUser) {
+        const userFavorites = await this.favoritesService.findAllByUser(currentUser.id);
+        favIds = new Set(userFavorites.map(f => f.book.id));
         books = books.map(b => ({
             ...b,
             isFavorite: favIds.has(b.id)
@@ -45,16 +46,22 @@ export class AppController {
         genre: ub.book.genre,
         description: ub.book.description,
         friendName: ub.user.username,
-        friendId: ub.user.id
+        friendId: ub.user.id,
+        isFavorite: favIds.has(ub.book.id)
     }));
 
-    const popularBooks = await this.booksService.findMostPopular(4);
+    const popularBooksRaw = await this.booksService.findMostPopular(4);
+    const popularBooks = popularBooksRaw.map(b => ({
+        ...b,
+        isFavorite: favIds.has(b.id)
+    }));
 
     return {
       readingNow,
       newBooks,
       friendsBooks,
-      weeklyPicks: popularBooks
+      weeklyPicks: popularBooks,
+      isAuthenticated: !!currentUser
     };
   }
 
@@ -68,9 +75,16 @@ export class AppController {
 
   @Get('friends-reads')
   @Render('users/friends-reads')
-  async friendsReads() {
+  async friendsReads(@Req() req: Request) {
     const reads = await this.userBooksService.findLatestReading(); 
     
+    let favIds = new Set<number>();
+    const currentUser = (req as any).user;
+    if (currentUser) {
+        const userFavorites = await this.favoritesService.findAllByUser(currentUser.id);
+        favIds = new Set(userFavorites.map(f => f.book.id));
+    }
+
     const friendsReads = reads.map(ub => ({
         id: ub.book.id,
         title: ub.book.title,
@@ -81,11 +95,13 @@ export class AppController {
         friendName: ub.user.username,
         friendId: ub.user.id,
         status: ub.status,
-        date: ub.updatedAt
+        date: ub.updatedAt,
+        isFavorite: favIds.has(ub.book.id)
     }));
 
     return {
-      friendsReads
+      friendsReads,
+      isAuthenticated: !!currentUser
     };
   }
 }

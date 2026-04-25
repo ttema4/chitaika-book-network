@@ -1,4 +1,4 @@
-import { Resolver, Query, Mutation, Args, Int, ResolveField, Parent } from '@nestjs/graphql';
+import { Resolver, Query, Mutation, Args, Int, ResolveField, Parent, Context } from '@nestjs/graphql';
 import { UsersService } from './users.service';
 import { User } from './models/user.model';
 import { UpdateUserInput } from './dto/update-user.input';
@@ -8,6 +8,8 @@ import { Favorite } from '../favorites/models/favorite.model';
 import { FavoritesService } from '../favorites/favorites.service';
 import { UserBook } from '../user-books/models/user-book.model';
 import { UserBooksService } from '../user-books/user-books.service';
+import { UseGuards, ForbiddenException } from '@nestjs/common';
+import { AuthGuard } from '../auth/auth.guard';
 
 @Resolver(() => User)
 export class UsersResolver {
@@ -33,10 +35,16 @@ export class UsersResolver {
   }
 
   @Mutation(() => User)
+  @UseGuards(AuthGuard)
   async updateUser(
       @Args('id', { type: () => Int }) id: number,
       @Args('updateUserInput') updateUserInput: UpdateUserInput,
+      @Context() context: any,
   ) {
+    const user = context.req.user;
+    if (user.id !== id && user.role !== 'admin') {
+         throw new ForbiddenException('You can only update your own profile');
+    }
     return this.usersService.update(id, updateUserInput);
   }
 
@@ -55,3 +63,4 @@ export class UsersResolver {
       return this.userBooksService.findAllByUser(user.id);
   }
 }
+

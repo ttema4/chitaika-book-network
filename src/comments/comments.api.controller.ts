@@ -1,15 +1,15 @@
 import { 
     Controller, Get, Post, Body, Patch, Param, Delete, 
     ValidationPipe, NotFoundException, BadRequestException, 
-    ParseIntPipe, Res, Query, DefaultValuePipe, UseInterceptors, UseGuards 
+    ParseIntPipe, Res, Query, DefaultValuePipe, UseInterceptors, UseGuards, Req, ForbiddenException 
 } from '@nestjs/common';
 import { CacheInterceptor } from '@nestjs/cache-manager';
 import { CacheControl } from '../common/decorators/cache-control.decorator';
 import { CommentsService } from './comments.service';
 import { CreateCommentDto } from './dto/create-comment.dto';
 import { CommentResponseDto } from './dto/comment-response.dto';
-import { ApiTags, ApiOperation, ApiResponse, ApiHeader, ApiBody, ApiCookieAuth } from '@nestjs/swagger';
-import type { Response } from 'express';
+import { ApiTags, ApiOperation, ApiResponse, ApiHeader, ApiBody, ApiCookieAuth, ApiQuery } from '@nestjs/swagger';
+import type { Response, Request } from 'express';
 import { AuthGuard } from '../auth/auth.guard';
 
 @ApiTags('comments')
@@ -24,23 +24,49 @@ export class CommentsApiController {
   @ApiResponse({ status: 201, description: 'The comment has been successfully created.', type: CommentResponseDto })
   @ApiResponse({ status: 400, description: 'Bad Request.' })
   @ApiBody({ type: CreateCommentDto })
-  async create(@Body(new ValidationPipe()) createCommentDto: CreateCommentDto) {
-    return this.commentsService.create(createCommentDto);
+  async create(@Body(new ValidationPipe()) createCommentDto: CreateCommentDto, @Req() req: Request) {
+    const userId = (req as any).user.id;
+    return this.commentsService.create({ ...createCommentDto, user_id: userId });
   }
+
+  @Get()
   @UseInterceptors(CacheInterceptor)
   @CacheControl('public, max-age=60')
-  @Get()
   @ApiOperation({ summary: 'Get all comments with pagination' })
-  @ApiHeader({ name: 'Link', description: 'Links to next/prev pages' })
-  @ApiResponse({ status: 200, description: 'Return all comments.', type: [CommentResponseDto] })
+  @ApiQuery({ name: 'page', required: false, type: Number, description: 'Page number (starting from 1)' })
+  @ApiQuery({ name: 'limit', required: false, type: Number, description: 'Number of items per page' })
+  @ApiResponse({ 
+    status: 200, 
+    description: 'Return all comments.', 
+    type: [CommentResponseDto],
+    headers: {
+        'Link': { description: 'Pagination links for next/previous pages', schema: { type: 'string' } },
+        'X-Total-Count': { description: 'Total number of items', schema: { type: 'integer' } }
+    }
+  })
   async findAll(
     @Res({ passthrough: true }) res: Response,
-    @Query('page', new DefaultValuePipe(1), ParseIntPipe) page: any,
-    @Query('limit', new DefaultValuePipe(10), ParseIntPipe) limit: any,
+    @Req() req: Request,
   ) {
+    const { page: pageRaw, limit: limitRaw } = req.query;
+
+    if (Array.isArray(pageRaw) || Array.isArray(limitRaw)) {
+        throw new BadRequestException('Validation failed (duplicate parameters)');
+    }
+
+    const isPristineInt = (val: any) => /^\d+$/.test(String(val));
+    
+    if ((pageRaw && !isPristineInt(pageRaw)) || (limitRaw && !isPristineInt(limitRaw))) {
+        throw new BadRequestException('Validation failed (page and limit must be integers)');
+    }
+
+    const page = pageRaw ? parseInt(pageRaw as string, 10) : 1;
+    const limit = limitRaw ? parseInt(limitRaw as string, 10) : 10;
+
     if (page < 1 || limit < 1 || page > Number.MAX_SAFE_INTEGER || limit > Number.MAX_SAFE_INTEGER) {
        throw new BadRequestException('Validation failed (page and limit must be positive integers)');
     }
+
     const skip = (page - 1) * limit;
     const [comments, total] = await this.commentsService.findAllWithPagination(skip, limit);
     
@@ -79,10 +105,21 @@ export class CommentsApiController {
   }
 
   @Delete(':id')
+  @UseGuards(AuthGuard)
+  @ApiCookieAuth()
   @ApiOperation({ summary: 'Delete a comment' })
   @ApiResponse({ status: 200, description: 'The comment has been successfully deleted.' })
+  @ApiResponse({ status: 403, description: 'Forbidden.' })
   @ApiResponse({ status: 404, description: 'Comment not found.' })
-  async remove(@Param('id', ParseIntPipe) id: number) {
+  async remove(@Param('id', ParseIntPipe) id: number, @Req() req: Request) {
+    const comment = await this.commentsService.findOne(id);
+    if (!comment) {
+        throw new NotFoundException(`Comment with ID ${id} not found`);
+    }
+    const user = (req as any).user;
+    if (comment.user.id !== user.id && user.role !== 'admin') {
+        throw new ForbiddenException('You can only delete your own comments');
+    }
     return this.commentsService.remove(id);
   }
 }

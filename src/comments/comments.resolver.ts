@@ -1,4 +1,4 @@
-import { Resolver, Query, Mutation, Args, Int, ResolveField, Parent } from '@nestjs/graphql';
+import { Resolver, Query, Mutation, Args, Int, ResolveField, Parent, Context } from '@nestjs/graphql';
 import { CommentsService } from './comments.service';
 import { Comment } from './models/comment.model';
 import { CreateCommentInput } from './dto/create-comment.input';
@@ -6,6 +6,8 @@ import { User } from '../users/models/user.model';
 import { UsersService } from '../users/users.service';
 import { Book } from '../books/models/book.model';
 import { BooksService } from '../books/books.service';
+import { UseGuards, ForbiddenException, NotFoundException } from '@nestjs/common';
+import { AuthGuard } from '../auth/auth.guard';
 
 @Resolver(() => Comment)
 export class CommentsResolver {
@@ -30,12 +32,28 @@ export class CommentsResolver {
   }
 
   @Mutation(() => Comment)
-  async createComment(@Args('createCommentInput') createCommentInput: CreateCommentInput) {
-    return this.commentsService.create(createCommentInput);
+  @UseGuards(AuthGuard)
+  async createComment(
+      @Args('createCommentInput') createCommentInput: CreateCommentInput,
+      @Context() context: any,
+  ) {
+    const userId = context.req.user.id;
+    return this.commentsService.create({ ...createCommentInput, user_id: userId });
   }
 
   @Mutation(() => Boolean)
-  async removeComment(@Args('id', { type: () => Int }) id: number) {
+  @UseGuards(AuthGuard)
+  async removeComment(@Args('id', { type: () => Int }) id: number, @Context() context: any) {
+    const comment = await this.commentsService.findOne(id);
+    if (!comment) {
+        throw new NotFoundException('Comment not found');
+    }
+
+    const user = context.req.user;
+    if (comment.user.id !== user.id && user.role !== 'admin') {
+        throw new ForbiddenException('You can only delete your own comments');
+    }
+
     await this.commentsService.remove(id);
     return true;
   }
@@ -56,3 +74,4 @@ export class CommentsResolver {
     return this.booksService.findOne(comment.book_id);
   }
 }
+

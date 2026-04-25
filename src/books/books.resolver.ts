@@ -1,4 +1,4 @@
-import { Resolver, Query, Mutation, Args, Int, ResolveField, Parent } from '@nestjs/graphql';
+import { Resolver, Query, Mutation, Args, Int, ResolveField, Parent, Context } from '@nestjs/graphql';
 import { BooksService } from './books.service';
 import { Book } from './models/book.model';
 import { CreateBookInput } from './dto/create-book.input';
@@ -8,6 +8,8 @@ import { RatingsService } from '../ratings/ratings.service';
 import { Rating } from '../ratings/models/rating.model';
 import { FavoritesService } from '../favorites/favorites.service';
 import { Favorite } from '../favorites/models/favorite.model';
+import { UseGuards, ForbiddenException } from '@nestjs/common';
+import { AuthGuard } from '../auth/auth.guard';
 
 @Resolver(() => Book)
 export class BooksResolver {
@@ -48,11 +50,38 @@ export class BooksResolver {
   }
 
   @Mutation(() => Book)
+  @UseGuards(AuthGuard)
   async createBook(@Args('createBookInput') createBookInput: CreateBookInput) {
     return this.booksService.create({
         ...createBookInput,
         cover_url: createBookInput.cover_url || null,
         text_url: createBookInput.text_url || ''
     });
+  }
+
+  @Mutation(() => Book)
+  @UseGuards(AuthGuard)
+  async updateBook(
+      @Args('id', { type: () => Int }) id: number,
+      @Args('updateBookInput') updateBookInput: CreateBookInput,
+      @Context() context: any,
+  ) {
+    if (context.req.user.role !== 'admin') {
+        throw new ForbiddenException('Only admins can update books');
+    }
+    return this.booksService.update(id, updateBookInput);
+  }
+
+  @Mutation(() => Boolean)
+  @UseGuards(AuthGuard)
+  async deleteBook(
+      @Args('id', { type: () => Int }) id: number,
+      @Context() context: any,
+  ) {
+    if (context.req.user.role !== 'admin') {
+        throw new ForbiddenException('Only admins can delete books');
+    }
+    await this.booksService.remove(id);
+    return true;
   }
 }

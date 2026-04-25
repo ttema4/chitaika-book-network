@@ -36,7 +36,7 @@ document.addEventListener('DOMContentLoaded', () => {
                             text: "Вы подписались",
                             duration: 3000,
                             close: true,
-                            gravity: "bottom",
+                            gravity: "top",
                             position: "right",
                             style: { background: "#16a34a" }
                         }).showToast();
@@ -51,7 +51,7 @@ document.addEventListener('DOMContentLoaded', () => {
                             text: "Вы отписались",
                             duration: 3000,
                             close: true,
-                            gravity: "bottom",
+                            gravity: "top",
                             position: "right",
                             style: { background: "#6b7280" }
                         }).showToast();
@@ -117,7 +117,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     text: statusText[status],
                     duration: 3000,
                     close: true,
-                    gravity: "bottom",
+                    gravity: "top",
                     position: "right",
                     style: { background: "#365cff" }
                 }).showToast();

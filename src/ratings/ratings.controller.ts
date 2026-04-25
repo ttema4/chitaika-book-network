@@ -1,7 +1,8 @@
-import { Controller, Post, Body, Get, Param, UseInterceptors } from '@nestjs/common';
+import { Controller, Post, Body, Get, Param, UseInterceptors, UseGuards, Req } from '@nestjs/common';
 import { CacheInterceptor } from '@nestjs/cache-manager';
 import { CacheControl } from '../common/decorators/cache-control.decorator';
 import { RatingsService } from './ratings.service';
+import { AuthGuard } from '../auth/auth.guard';
 import { ApiExcludeController } from '@nestjs/swagger';
 
 @ApiExcludeController()
@@ -10,8 +11,10 @@ export class RatingsController {
   constructor(private readonly ratingsService: RatingsService) {}
 
   @Post()
-  setRating(@Body() body: { userId: number; bookId: number; rating: number; review?: string }) {
-    return this.ratingsService.setRating(body.userId, body.bookId, body.rating, body.review);
+  @UseGuards(AuthGuard)
+  setRating(@Body() body: { bookId: number; rating: number; review?: string }, @Req() req: any) {
+    const userId = req.user.id;
+    return this.ratingsService.setRating(userId, body.bookId, body.rating, body.review);
   }
 
   @Get('book/:bookId')
@@ -20,9 +23,9 @@ export class RatingsController {
   findByBook(@Param('bookId') bookId: string) {
     return this.ratingsService.findByBook(+bookId);
   }
-@UseInterceptors(CacheInterceptor)
+
+  @UseInterceptors(CacheInterceptor)
   @CacheControl('public, max-age=60')
-  
   @Get('book/:bookId/average')
   getAverage(@Param('bookId') bookId: string) {
       return this.ratingsService.getAverageRating(+bookId);

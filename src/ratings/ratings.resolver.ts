@@ -1,4 +1,4 @@
-import { Resolver, Query, Mutation, Args, Int, ResolveField, Parent } from '@nestjs/graphql';
+import { Resolver, Query, Mutation, Args, Int, ResolveField, Parent, Context } from '@nestjs/graphql';
 import { RatingsService } from './ratings.service';
 import { Rating } from './models/rating.model';
 import { CreateRatingInput } from './dto/create-rating.input';
@@ -6,6 +6,8 @@ import { User } from '../users/models/user.model';
 import { UsersService } from '../users/users.service';
 import { Book } from '../books/models/book.model';
 import { BooksService } from '../books/books.service';
+import { UseGuards, ForbiddenException, NotFoundException } from '@nestjs/common';
+import { AuthGuard } from '../auth/auth.guard';
 
 @Resolver(() => Rating)
 export class RatingsResolver {
@@ -30,12 +32,33 @@ export class RatingsResolver {
   }
 
   @Mutation(() => Rating)
-  async createRating(@Args('createRatingInput') createRatingInput: CreateRatingInput) {
-    return this.ratingsService.create(createRatingInput);
+  @UseGuards(AuthGuard)
+  async createRating(
+      @Args('createRatingInput') createRatingInput: CreateRatingInput,
+      @Context() context: any,
+  ) {
+    const userId = context.req.user.id;
+    return this.ratingsService.setRating(
+        userId, 
+        createRatingInput.book_id, 
+        createRatingInput.rating, 
+        createRatingInput.review
+    );
   }
 
   @Mutation(() => Boolean)
-  async removeRating(@Args('id', { type: () => Int }) id: number) {
+  @UseGuards(AuthGuard)
+  async removeRating(@Args('id', { type: () => Int }) id: number, @Context() context: any) {
+    const rating = await this.ratingsService.findOne(id);
+    if (!rating) {
+        throw new NotFoundException('Rating not found');
+    }
+    
+    const user = context.req.user;
+    if (rating.user_id !== user.id && user.role !== 'admin') {
+        throw new ForbiddenException('You can only delete your own ratings');
+    }
+
     await this.ratingsService.remove(id);
     return true;
   }

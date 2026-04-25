@@ -1,4 +1,4 @@
-import { Resolver, Query, Mutation, Args, Int, ResolveField, Parent } from '@nestjs/graphql';
+import { Resolver, Query, Mutation, Args, Int, ResolveField, Parent, Context } from '@nestjs/graphql';
 import { UserBooksService } from './user-books.service';
 import { UserBook } from './models/user-book.model';
 import { CreateUserBookInput } from './dto/create-user-book.input';
@@ -6,6 +6,8 @@ import { User } from '../users/models/user.model';
 import { UsersService } from '../users/users.service';
 import { Book } from '../books/models/book.model';
 import { BooksService } from '../books/books.service';
+import { UseGuards, ForbiddenException, NotFoundException } from '@nestjs/common';
+import { AuthGuard } from '../auth/auth.guard';
 
 @Resolver(() => UserBook)
 export class UserBooksResolver {
@@ -30,12 +32,28 @@ export class UserBooksResolver {
   }
 
   @Mutation(() => UserBook)
-  async createUserBook(@Args('createUserBookInput') createUserBookInput: CreateUserBookInput) {
-    return this.userBooksService.create(createUserBookInput);
+  @UseGuards(AuthGuard)
+  async createUserBook(
+      @Args('createUserBookInput') createUserBookInput: CreateUserBookInput,
+      @Context() context: any,
+  ) {
+    const userId = context.req.user.id;
+    return this.userBooksService.updateStatus(userId, createUserBookInput.bookId, createUserBookInput.status);
   }
 
   @Mutation(() => Boolean)
-  async removeUserBook(@Args('id', { type: () => Int }) id: number) {
+  @UseGuards(AuthGuard)
+  async removeUserBook(@Args('id', { type: () => Int }) id: number, @Context() context: any) {
+    const userBook = await this.userBooksService.findById(id);
+    if (!userBook) {
+        throw new NotFoundException('Entry not found');
+    }
+    
+    const user = context.req.user;
+    if (userBook.userId !== user.id && user.role !== 'admin') {
+        throw new ForbiddenException('You can only remove your own entries');
+    }
+
     await this.userBooksService.remove(id);
     return true;
   }

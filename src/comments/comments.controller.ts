@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, Param, Delete, Query, UseGuards, Req, UseInterceptors } from '@nestjs/common';
+import { Controller, Get, Post, Body, Param, Delete, Query, UseGuards, Req, UseInterceptors, ForbiddenException, NotFoundException } from '@nestjs/common';
 import { CacheInterceptor } from '@nestjs/cache-manager';
 import { CacheControl } from '../common/decorators/cache-control.decorator';
 import { CommentsService } from './comments.service';
@@ -24,16 +24,25 @@ export class CommentsController {
   findAll(@Query('bookId') bookId?: string) {
     return this.commentsService.findAll(bookId ? +bookId : undefined);
   }
-@UseInterceptors(CacheInterceptor)
+
+  @UseInterceptors(CacheInterceptor)
   @CacheControl('public, max-age=60')
-  
   @Get(':id')
   findOne(@Param('id') id: string) {
     return this.commentsService.findOne(+id);
   }
 
   @Delete(':id')
-  remove(@Param('id') id: string) {
+  @UseGuards(AuthGuard)
+  async remove(@Param('id') id: string, @Req() req: Request) {
+    const comment = await this.commentsService.findOne(+id);
+    if (!comment) {
+        throw new NotFoundException('Comment not found');
+    }
+    const user = (req as any).user;
+    if (comment.user.id !== user.id && user.role !== 'admin') {
+        throw new ForbiddenException('You can only delete your own comments');
+    }
     return this.commentsService.remove(+id);
   }
 }

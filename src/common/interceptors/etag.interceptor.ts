@@ -14,15 +14,16 @@ export class EtagInterceptor implements NestInterceptor {
     const ctx = context.switchToHttp();
     const req = ctx.getRequest<Request>();
     const res = ctx.getResponse<Response>();
+    const isSse = req.headers.accept === 'text/event-stream';
 
-    if (req.method !== 'GET') {
+    if (req.method !== 'GET' || isSse) {
         return next.handle();
     }
 
     return next.handle().pipe(
       tap((data) => {
         if (res.headersSent) return;
-        
+
         let entity: string | Buffer;
         if (typeof data === 'string' || Buffer.isBuffer(data)) {
             entity = data;

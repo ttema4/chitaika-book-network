@@ -54,7 +54,10 @@ export class UsersService {
 
   async update(id: number, updateUserDto: any): Promise<User> {
     const user = await this.findOne(id);
-    this.usersRepository.merge(user, updateUserDto);
+    
+    const { role, ...updateData } = updateUserDto;
+    
+    this.usersRepository.merge(user, updateData);
     const saved = await this.usersRepository.save(user);
     return saved;
   }

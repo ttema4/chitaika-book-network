@@ -78,6 +78,7 @@
             <div class="book-actions">
                 <a class="btn btn-primary book-action-read" href="/books/{{book.id}}/read">Читать книгу</a>
                 
+                {{#if isAdmin}}
                 <div class="btn-group book-action-row">
                     <a href="/books/{{book.id}}/edit" class="btn btn-secondary btn-sm book-action-edit">Редактировать</a>
                     
@@ -85,6 +86,7 @@
                         <button type="submit" class="btn btn-danger btn-sm book-action-delete-btn">Удалить</button>
                     </form>
                 </div>
+                {{/if}}
             </div>
         </div>
       </div>
